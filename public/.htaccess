@@ -1,0 +1,12 @@
+# Turn on the Apache rewrite engine
+RewriteEngine On
+
+# If the requested filename is an actual existing file on disk, serve it directly
+# This allows your browser to download public/css/style.css normally!
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# If the requested filename is an actual existing directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Otherwise, rewrite every single URL path directly into your central PHP router index file
+RewriteRule ^ index.php [QSA,L]

@@ -2,36 +2,45 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Point to our SQLite database file
-$dbPath = __DIR__ . '/database/database.sqlite';
+$host = 'db_server';
+$db   = 'portfolio_db';
+$user = 'portfolio_user';
+$pass = 'portfolio_password';
 
 try {
-    $pdo = new PDO("sqlite:" . $dbPath);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
 
-    echo "Starting database migrations...\n";
+    echo "Running MySQL migrations...\n";
 
-    // 1. Create Blog Posts Table
-    $pdo->exec("CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        status TEXT DEFAULT 'draft',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );");
-    echo "✔ Created 'posts' table successfully.\n";
+    // Create secure users table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
+        email VARCHAR(50) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(20) DEFAULT 'student',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;");
+    echo "✔ Created 'users' table structure.\n";
 
-    // 2. Create Study Progress Table
-    $pdo->exec("CREATE TABLE IF NOT EXISTS course_progress (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        course_name TEXT NOT NULL,
-        ec_points INTEGER NOT NULL,
-        grade REAL,
-        status TEXT DEFAULT 'not_started'
-    );");
-    echo "✔ Created 'course_progress' table successfully.\n";
+    // Insert dummy user if it does not exist
+    $testUsername = 'admin';
+    // Use standard BCRYPT hashing algorithm
+    $testPasswordHash = password_hash('password123', PASSWORD_BCRYPT);
+    $testEmail = 'admin@gmail.com';
 
-    echo "All migrations completed successfully!\n";
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->execute([$testUsername]);
+
+    if (!$stmt->fetch()) {
+        $insert = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'admin')");
+        $insert->execute([$testUsername, $testEmail, $testPasswordHash]);
+        echo "✔ Seeded default admin credentials (Username: admin / Email: admin@gmail.com / Password: password123).\n";
+    }
+
+    echo "All database configurations fully migrated!\n";
 
 } catch (PDOException $e) {
     echo "❌ Migration failed: " . $e->getMessage() . "\n";
