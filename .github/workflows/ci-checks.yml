@@ -33,7 +33,7 @@ jobs:
         run: php ./vendor/bin/phpcs --standard=PSR12 src/
 
       - name: Run PHPStan Static Analysis
-        run: ./vendor/bin/phpstan analyse src/ --level=8
+        run: php ./vendor/bin/phpstan analyse src/ --level=8
 
       - name: Install Deptrac Tool
         run: curl -LSs https://github.com/qossmic/deptrac/releases/latest/download/deptrac.phar -o deptrac.phar && chmod +x deptrac.phar
