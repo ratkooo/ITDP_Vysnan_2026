@@ -1,0 +1,42 @@
+name: Continuous Integration Quality Checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  qa_checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
+
+      - name: Setup PHP Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+
+      - name: Install Project Dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run PHP CodeSniffer (PSR-12)
+        run: ./vendor/bin/phpcs --standard=PSR12 src/
+
+      - name: Run PHPStan Static Analysis
+        run: ./vendor/bin/phpstan analyse src/ --level=8
+
+      - name: Install Deptrac Tool
+        run: curl -LSs https://github.com/qossmic/deptrac/releases/latest/download/deptrac.phar -o deptrac.phar && chmod +x deptrac.phar
+
+      - name: Run Deptrac Analysis
+        run: ./deptrac.phar analyse --config-file=deptrac.yaml
