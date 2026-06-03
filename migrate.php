@@ -17,7 +17,7 @@ try {
 
     echo "\033[36m🚀 Starting Database Migration Runner Engine...\033[0m\n";
 
-    // --- NEW: HANDLE DATABASE REFRESH FLAG ---
+    // --- HANDLE DATABASE REFRESH FLAG ---
     if (isset($argv) && in_array('--refresh', $argv)) {
         echo "\033[33m🔄 Refresh flag detected. Resetting database environment state...\033[0m\n";
 
@@ -37,7 +37,6 @@ try {
         $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
         echo "\033[32m✨ Database cleared successfully. Executing clean installation.\033[0m\n\n";
     }
-    // ------------------------------------------
 
     // 1. Ensure the system inventory tracking log exists
     $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
@@ -81,6 +80,22 @@ try {
 
         echo "\033[32m✔ SUCCESS\033[0m\n";
         $appliedCount++;
+    }
+
+    // --- DYNAMIC & SAFE ADMIN SEEDING ---
+    // This generates a 100% accurate mathematical hash for 'x63HaL6qcTzjij' at runtime
+    $testUsername = 'admin';
+    $testEmail = 'admin@gmail.com';
+    $testPasswordHash = password_hash('x63HaL6qcTzjij', PASSWORD_BCRYPT);
+    $testRole = 'admin';
+
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->execute([$testUsername]);
+
+    if (!$stmt->fetch()) {
+        $insert = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+        $insert->execute([$testUsername, $testEmail, $testPasswordHash, $testRole]);
+        echo "\033[32m👤 Default admin account seeded programmatically with dynamic BCRYPT hash.\033[0m\n";
     }
 
     if ($appliedCount === 0) {

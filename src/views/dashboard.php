@@ -106,7 +106,7 @@
         <td style="padding: 0.5rem;"><input type="text" id="edit-grade-${id}" value="${grade}" style="padding:0.4rem; width:100%;"></td>
         <td style="padding: 0.5rem;">
             <select id="edit-status-${id}" style="padding:0.4rem; width:100%;">
-                <option value="Active Run" ${status === 'Active Run' ? 'selected' : ''}>In Progress</option>
+                <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                 <option value="Passed" ${status === 'Passed' ? 'selected' : ''}>Passed</option>
                 <option value="Failed" ${status === 'Failed' ? 'selected' : ''}>Failed</option>
             </select>

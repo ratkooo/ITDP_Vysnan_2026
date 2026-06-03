@@ -56,8 +56,10 @@
                     <label for="toggle-password-visibility">Show Password</label>
                 </div>
             </div>
-
             <button type="submit" id="submit-btn" class="btn">Register Account</button>
+            <div class="form-group">Already registered?
+                <a href="/login"> Click here</a>
+            </div>
         </form>
     </main>
 
@@ -110,9 +112,10 @@
         const val = usernameInput.value.trim();
         const errorEl = document.getElementById('username-error');
 
-        if (val.length < 3) {
+        // FIX: Set evaluation condition and message tracking directly to 5 characters
+        if (val.length < 5) {
             statuses.username = false;
-            applyFeedback(usernameInput, errorEl, false, "Username must be at least 3 characters long.");
+            applyFeedback(usernameInput, errorEl, false, "Username must be at least 5 characters long.");
             return;
         }
 
@@ -186,16 +189,16 @@
         const errorEl = document.getElementById('confirm-error');
         if (confirmInput.value === passwordInput.value && passwordInput.value !== "") {
             statuses.confirm = true;
-            applyFeedback(confirmInput, errorEl, true, "✔ Password inputs match perfectly.");
+            applyFeedback(confirmInput, errorEl, true, "✔ Password inputs match.");
         } else {
             statuses.confirm = false;
-            applyFeedback(confirmInput, errorEl, false, "Passwords do not match yet.");
+            applyFeedback(confirmInput, errorEl, false, "Passwords do not match.");
         }
     }
     confirmInput.addEventListener('input', validateConfirmation);
 
-    // Keep Show Password Toggle feature
-    document.getElementById('toggle-registration-passwords').addEventListener('change', function() {
+    // FIX: Synced element ID string selector targeting to match the markup checkbox correctly
+    document.getElementById('toggle-password-visibility').addEventListener('change', function() {
         const resolveType = this.checked ? 'text' : 'password';
         passwordInput.type = resolveType;
         confirmInput.type = resolveType;

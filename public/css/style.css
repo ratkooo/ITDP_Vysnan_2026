@@ -35,7 +35,7 @@ nav {
     padding: 0.75rem 2rem;
     display: flex;
     justify-content: space-between;
-    align-items: l;
+    align-items: center;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -146,7 +146,7 @@ article small {
     color: #ffffff;
 }
 
-/* Forms layout definitions used in Login/Register */
+/* Forms layout definitions used in Login/Register/Blog Admin Panel */
 form div {
     margin-bottom: 1.25rem;
 }
@@ -158,14 +158,33 @@ form label {
     color: var(--primary);
 }
 
+/* Added form textarea here to share borders, padding, background, and fonts */
 form input[type="text"],
-form input[type="password"] {
+form input[type="password"],
+form textarea {
     width: 100%;
-    padding: 0.65rem;
+    padding: 0.75rem;
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 1rem;
     background-color: #ffffff;
+    font-family: inherit; /* Force matching clean body fonts over browser default monospaces */
+    color: var(--text);
+    transition: border-color 0.15s ease-in-out;
+}
+
+form input[type="text"]:focus,
+form input[type="password"]:focus,
+form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* Specialized box rules to transform the markdown area into a large professional board */
+form textarea {
+    min-height: 280px;  /* Generous default height expansion */
+    line-height: 1.6;   /* Improved text typing legibility */
+    resize: vertical;   /* Allows vertical adjusting while preserving page layout integrity */
 }
 
 /* -------------------------------------------------------------------------
