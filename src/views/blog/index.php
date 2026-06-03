@@ -4,16 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog Article View</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <nav>
-        <a href="/">Home</a>
-        <a href="/blog">Blog</a>
-        <a href="/dashboard">Study Dashboard</a>
+<nav>
+    <a href="/">Home</a>
+    <a href="/blog">Blog</a>
+    <a href="/dashboard">Study Dashboard</a>
+
+    <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <a href="/logout">Logout</a>
+        <span style="color: #94a3b8; margin: 0 1rem; font-size: 0.9rem;">
+                <?= htmlspecialchars($_SESSION['username']); ?>!
+        </span>
+    <?php else: ?>
         <a href="/login">Login</a>
-    </nav>
+    <?php endif; ?>
+</nav>
 
     <header>
         <h1>Object-Oriented Design in PHP 8.2</h1>

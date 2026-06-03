@@ -9,48 +9,73 @@
 <body>
 
 <nav>
-    <a href="/">Home</a>
-    <a href="/blog">Blog</a>
-    <a href="/dashboard">Study Dashboard</a>
-    <a href="/login">Login</a>
+    <div class="nav-left">
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <a href="/dashboard">Study Dashboard</a>
+        <?php endif; ?>
+    </div>
+
+    <div class="nav-right">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <span style="color: white; font-weight: 500; margin: 0 1rem;">
+                <?= htmlspecialchars($_SESSION['username']); ?>
+            </span>
+            <a href="/logout">Logout</a>
+        <?php else: ?>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        <?php endif; ?>
+    </div>
 </nav>
 
 <header>
     <h1>Study Programme Progress Dashboard</h1>
-    <p>Live higher education milestones tracking data</p>
+    <p>Live higher education milestones tracking data (Administrative Execution Mode)</p>
 </header>
 
 <div class="container">
     <main>
-        <h2>Completed Course Roadmap</h2>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2>Completed Course Roadmap</h2>
+            <button class="btn" onclick="openNewCourseForm()">+ Add New Module</button>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
             <thead>
             <tr style="background: var(--light); text-align: left;">
                 <th style="padding: 0.75rem; border-bottom: 2px solid var(--border);">Course Module</th>
-                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border);">EC Points</th>
-                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border);">Grade</th>
-                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border);">Status</th>
+                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border); width: 100px;">EC Points</th>
+                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border); width: 80px;">Grade</th>
+                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border); width: 140px;">Status</th>
+                <th style="padding: 0.75rem; border-bottom: 2px solid var(--border); width: 160px; text-align: center;">Actions</th>
             </tr>
             </thead>
-            <tbody>
-            <tr>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Introduction to Development</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">5 EC</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">8.5</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);" class="text-success">Passed</td>
-            </tr>
-            <tr>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Object-Oriented Programming</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">5 EC</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">9.0</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);" class="text-success">Passed</td>
-            </tr>
-            <tr>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">IT Development Portfolio</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">10 EC</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">-</td>
-                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); color: var(--accent);">Active Run</td>
-            </tr>
+            <tbody id="course-table-body">
+            <?php foreach ($courses as $course): ?>
+                <tr id="row-<?= $course['id']; ?>" style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 0.75rem;" class="cell-name"><?= htmlspecialchars($course['course_name']); ?></td>
+                    <td style="padding: 0.75rem;" class="cell-ec"><?= (int)$course['ec_points']; ?> EC</td>
+                    <td style="padding: 0.75rem;" class="cell-grade"><?= htmlspecialchars($course['grade']); ?></td>
+                    <td style="padding: 0.75rem;" class="cell-status font-weight-500">
+                    <span class="<?= $course['status'] === 'Passed' ? 'text-success' : 'text-error'; ?>">
+                        <?= htmlspecialchars($course['status']); ?>
+                    </span>
+                    </td>
+                    <td style="padding: 0.75rem; text-align: center;">
+                        <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; margin-right: 0.25rem;"
+                                onclick="enableInlineEdit(<?= $course['id']; ?>, '<?= htmlspecialchars($course['course_name'], ENT_QUOTES); ?>', <?= $course['ec_points']; ?>, '<?= htmlspecialchars($course['grade'], ENT_QUOTES); ?>', '<?= htmlspecialchars($course['status'], ENT_QUOTES); ?>')">
+                            Edit
+                        </button>
+                        <button class="btn" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; background-color: var(--error);"
+                                onclick="deleteCourseEntry(<?= $course['id']; ?>)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
             </tbody>
         </table>
     </main>
@@ -59,15 +84,99 @@
         <sidebar>
             <h2>Credit Summary</h2>
             <p>Total academic tracking metrics:</p>
-            <h3 style="font-size: 2rem; color: var(--accent); margin: 0.5rem 0;">10 / 60 EC</h3>
-            <p>Minimum threshold validation requirements checked dynamically.</p>
+            <h3 style="font-size: 2.2rem; color: var(--success); margin: 0.5rem 0;">
+                <span id="metrics-ec-sum"><?= $totalPassedEC; ?></span> / 60 EC
+            </h3>
+            <p>Calculated using strict schema constraints for rows labeled as <b class="text-success">Passed</b>.</p>
         </sidebar>
     </aside>
 </div>
 
 <footer>
-    <p>&copy; <?= date('Y'); ?> Portfolio App. Built using PSR-12 standards.</p>
+    <p>&copy; <?= date('Y'); ?> Portfolio App. Secure Session Environment.</p>
 </footer>
 
+<script>
+    function enableInlineEdit(id, name, ec, grade, status) {
+        const row = document.getElementById(`row-${id}`);
+
+        row.innerHTML = `
+        <td style="padding: 0.5rem;"><input type="text" id="edit-name-${id}" value="${name}" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;"><input type="number" id="edit-ec-${id}" value="${ec}" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;"><input type="text" id="edit-grade-${id}" value="${grade}" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;">
+            <select id="edit-status-${id}" style="padding:0.4rem; width:100%;">
+                <option value="Active Run" ${status === 'Active Run' ? 'selected' : ''}>In Progress</option>
+                <option value="Passed" ${status === 'Passed' ? 'selected' : ''}>Passed</option>
+                <option value="Failed" ${status === 'Failed' ? 'selected' : ''}>Failed</option>
+            </select>
+        </td>
+        <td style="padding: 0.5rem; text-align: center;">
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size:0.85rem; background-color: var(--success);" onclick="saveInlineEdit(${id})">Save</button>
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size:0.85rem; background-color: #64748b;" onclick="window.location.reload()">Cancel</button>
+        </td>
+    `;
+    }
+
+    function saveInlineEdit(id) {
+        const formData = new FormData();
+        if (id) formData.append('id', id);
+        formData.append('course_name', document.getElementById(`edit-name-${id}`)?.value || document.getElementById('new-name')?.value);
+        formData.append('ec_points', document.getElementById(`edit-ec-${id}`)?.value || document.getElementById('new-ec')?.value);
+        formData.append('grade', document.getElementById(`edit-grade-${id}`)?.value || document.getElementById('new-grade')?.value);
+        formData.append('status', document.getElementById(`edit-status-${id}`)?.value || document.getElementById('new-status')?.value);
+
+        fetch('/api/dashboard/save', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Execution error occurred: " + data.error);
+                }
+            });
+    }
+
+    function openNewCourseForm() {
+        const tbody = document.getElementById('course-table-body');
+        const newRow = document.createElement('tr');
+        newRow.style.background = "#f8fafc";
+        newRow.style.borderBottom = "2px solid var(--accent)";
+
+        newRow.innerHTML = `
+        <td style="padding: 0.5rem;"><input type="text" id="new-name" placeholder="E.g. Computer Networks" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;"><input type="number" id="new-ec" value="5" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;"><input type="text" id="new-grade" value="-" style="padding:0.4rem; width:100%;"></td>
+        <td style="padding: 0.5rem;">
+            <select id="new-status" style="padding:0.4rem; width:100%;">
+                <option value="Active Run">In Progress</option>
+                <option value="Passed">Passed</option>
+                <option value="Failed">Failed</option>
+            </select>
+        </td>
+        <td style="padding: 0.5rem; text-align: center;">
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size:0.85rem; background-color: var(--accent);" onclick="saveInlineEdit(0)">Create</button>
+            <button class="btn" style="padding: 0.35rem 0.65rem; font-size:0.85rem; background-color: #64748b;" onclick="this.closest('tr').remove()">Discard</button>
+        </td>
+    `;
+        tbody.insertBefore(newRow, tbody.firstChild);
+    }
+
+    function deleteCourseEntry(id) {
+        if (!confirm("Are you sure you want to purge this course entry from the infrastructure database logs?")) return;
+
+        const formData = new FormData();
+        formData.append('id', id);
+
+        fetch('/api/dashboard/delete', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`row-${id}`).remove();
+                    window.location.reload();
+                }
+            });
+    }
+</script>
 </body>
 </html>

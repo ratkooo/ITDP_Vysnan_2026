@@ -32,7 +32,6 @@ class authController
             // Regenerate session ID to completely prevent Session Fixation attacks
             session_regenerate_id(true);
 
-            $_isLoggedIn = true;
             $_SESSION['user_id'] = $user->id;
             $_SESSION['username'] = $user->username;
             $_SESSION['email'] = $user->email;
@@ -42,7 +41,6 @@ class authController
             exit;
         }
 
-        // Keep errors vague to prevent malicious account enumeration
         $this->showLogin("Invalid username or password configuration.");
     }
 
@@ -57,7 +55,7 @@ class authController
             );
         }
         session_destroy();
-        header("Location: /login");
+        header("Location: /");
         exit;
     }
 
@@ -84,7 +82,6 @@ class authController
             return;
         }
 
-        // 2. Check if username is already taken
         if ($this->userRepository->findByUsername($username) !== null) {
             $this->showRegister("Username is already registered inside our system.");
             return;
@@ -95,11 +92,10 @@ class authController
             return;
         }
 
-        // 3. OWASP A07:2025 Mitigation - Secure Password Hashing
+        //OWASP A07:2025 Mitigation - Secure Password Hashing
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
-        // 4. Save to database (defaulting to the 'student' role)
-        $success = $this->userRepository->insert($username, $email, $passwordHash, 'student');
+        $success = $this->userRepository->insert($username, $email, $passwordHash, 'user');
 
         if ($success) {
             $this->showRegister(null, "Registration successful! You can now log in.");
@@ -108,27 +104,21 @@ class authController
         }
     }
 
-    public static function requireRole(string $requiredRole): void
+    public static function requireRole(string $targetRole): void
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start([
-                'cookie_httponly' => true,
-                'use_strict_mode' => true,
-            ]);
+            session_start();
         }
 
-        // Check 1: Verify the session context contains an active login record [cite: 61]
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: /login");
-            exit;
-        }
-
-        // Check 2: Verify the user holds the proper clearance role level [cite: 63]
-        if ($_SESSION['role'] !== $requiredRole) {
-            http_response_code(403);
-            echo "<h1>403 Forbidden</h1>";
-            echo "<p>Access Denied: Your account role does not have permission to view this resource.</p>";
+        // Drop session footprint immediately if roles or parameters don't line up
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== $targetRole) {
+            header('HTTP/1.1 403 Forbidden');
+            echo "<h2 style='color:#dc2626; font-family:sans-serif; text-align:center; margin-top:4rem;'>
+                    403 Unauthorized Access - " . htmlspecialchars(strtoupper($targetRole)) . " Token Required.
+                  </h2>";
             exit;
         }
     }
+
+
 }

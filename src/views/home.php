@@ -9,10 +9,25 @@
 <body>
 
 <nav>
-    <a href="/">Home</a>
-    <a href="/blog">Blog</a>
-    <a href="/dashboard">Study Dashboard</a>
-    <a href="/login">Login</a>
+    <div class="nav-left">
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <?php if (session_status() == PHP_SESSION_NONE) session_start();  ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <a href="/dashboard">Study Dashboard</a>
+        <?php endif; ?>
+    </div>
+
+    <div class="nav-right">
+        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="/profile"><?= htmlspecialchars($_SESSION['username']); ?></a>
+            <a href="/logout">Logout</a>
+        <?php else: ?>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        <?php endif; ?>
+    </div>
 </nav>
 
 <header>

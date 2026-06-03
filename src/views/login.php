@@ -41,14 +41,26 @@
 </head>
 <body>
 <nav>
-    <a href="/">Home</a>
-    <a href="/login">Login</a>
-    <a href="/register">Register</a>
+    <div class="nav-left">
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <?php if (session_status() == PHP_SESSION_NONE) session_start();  ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <a href="/dashboard">Study Dashboard</a>
+        <?php endif; ?>
+    </div>
+
+    <div class="nav-right">
+        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="/profile"><?= htmlspecialchars($_SESSION['username']); ?></a>
+            <a href="/logout">Logout</a>
+        <?php endif; ?>
+    </div>
 </nav>
 
 <div class="login-card">
-    <h2>System Login</h2>
-    <p>Enter your authorization tokens to access admin panels.</p>
+    <h2>Login</h2>
 
     <?php if (!empty($error)): ?>
         <div class="alert-error"><?= htmlspecialchars($error); ?></div>
@@ -63,8 +75,22 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required autocomplete="current-password">
         </div>
-        <button type="submit" class="btn" style="width: 100%;">Authenticate Session</button>
+        <div class="checkbox-container">
+            <input type="checkbox" id="toggle-password-visibility">
+            <label for="toggle-password-visibility">Show Password</label>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Login</button>
+        <div class="form-group">Click here to
+        <a href="/register"> register</a>
+        </div>
     </form>
 </div>
 </body>
 </html>
+
+<script>
+    document.getElementById('toggle-password-visibility').addEventListener('change', function() {
+        const passwordInput = document.getElementById('password');
+        passwordInput.type = this.checked ? 'text' : 'password';
+    });
+</script>

@@ -43,13 +43,13 @@ class mySQLUserRepository implements userRepositoryInterface
         return new User(
             (int)$row['id'],
             $row['username'],
-            $row['email'], // Note: Make sure 'email' is included in your SELECT statement if you need it here!
+            $row['email'],
             $row['password'],
             $row['role']
         );
     }
 
-    public function insert(string $username, string $email, string $passwordHash, string $role = 'student'): bool
+    public function insert(string $username, string $email, string $passwordHash, string $role): bool
     {
         $stmt = $this->pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)");
         return $stmt->execute([

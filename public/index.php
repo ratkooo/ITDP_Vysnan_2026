@@ -6,6 +6,12 @@ use App\Controllers\AuthController;
 use App\Controllers\ProjectApiController;
 use App\Repositories\MySQLUserRepository;
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start([
+        'cookie_httponly' => true,
+        'use_strict_mode' => true,
+    ]);
+}
 // =========================================================================
 // 1. DATABASE CONFIGURATION (Multi-Container DevOps Step 3)
 // =========================================================================
@@ -51,13 +57,6 @@ switch ($requestUri) {
     // Core Homepage (Biographical Info & Client-Side API Showcase Area)
     case '/':
         require_once __DIR__ . '/../src/Views/home.php';
-        break;
-
-    // Academic Performance Tracking Dashboard
-    case '/dashboard':
-        // Restricts access to authenticated accounts (OWASP A01:2025 Broken Access Control Protection)
-        AuthController::requireRole('admin');
-        require_once __DIR__ . '/../src/Views/dashboard.php';
         break;
 
     // Blog Publishing Workflow Index Area
@@ -115,4 +114,96 @@ switch ($requestUri) {
         echo "<h1>404 Not Found</h1>";
         echo "<p>The requested route configuration structure does not exist on this application server.</p>";
         break;
+
+    case '/dashboard':
+        // Enforce strict protection checking right at the gateway line
+        \App\Controllers\AuthController::requireRole('admin');
+
+        // Safeguard connection parameters against infrastructure dropping
+        if (!isset($pdo)) {
+            die("Database infrastructure configuration error. Global connection vector down.");
+        }
+
+        // Fetch dynamic roadmap blocks
+        $stmt = $pdo->query("SELECT * FROM courses ORDER BY id ASC");
+        $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Calculate dynamic total metric metrics
+        $passedStmt = $pdo->query("SELECT SUM(ec_points) FROM courses WHERE status = 'Passed'");
+        $totalPassedEC = (int)$passedStmt->fetchColumn();
+
+        require_once __DIR__ . '/../src/Views/dashboard.php';
+        break;
+
+    case '/api/dashboard/save':
+        \App\Controllers\AuthController::requireRole('admin');
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'error' => 'Method rejection']);
+            exit;
+        }
+
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : null;
+        $course_name = trim($_POST['course_name'] ?? '');
+        $ec_points = (int)($_POST['ec_points'] ?? 0);
+        $grade = trim($_POST['grade'] ?? '-');
+        $status = trim($_POST['status'] ?? 'Active Run');
+
+        if (empty($course_name)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid structural content parameters.']);
+            exit;
+        }
+
+        if ($id) {
+            // Update existing entry statement track
+            $stmt = $pdo->prepare("UPDATE courses SET course_name = ?, ec_points = ?, grade = ?, status = ? WHERE id = ?");
+            $success = $stmt->execute([$course_name, $ec_points, $grade, $status, $id]);
+        } else {
+            // Create a brand new record profile inside the cluster
+            $stmt = $pdo->prepare("INSERT INTO courses (course_name, ec_points, grade, status) VALUES (?, ?, ?, ?)");
+            $success = $stmt->execute([$course_name, $ec_points, $grade, $status]);
+        }
+
+        echo json_encode(['success' => $success]);
+        exit;
+
+    case '/api/dashboard/delete':
+        \App\Controllers\AuthController::requireRole('admin');
+        header('Content-Type: application/json');
+
+        $id = isset($_POST['id']) ? (int)$POST['id'] : 0;
+        $stmt = $pdo->prepare("DELETE FROM courses WHERE id = ?");
+        $success = $stmt->execute([$id]);
+
+        echo json_encode(['success' => $success]);
+        exit;
+    // RESTful JSON API Endpoint: Dynamic Account Availability Engine
+    case '/api/check-availability':
+        header('Content-Type: application/json');
+
+        $username = trim($_GET['username'] ?? '');
+        $email = trim($_GET['email'] ?? '');
+
+        $usernameExists = false;
+        $emailExists = false;
+
+        // Dynamic queries against the database engine connection mapping
+        if (!empty($username)) {
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+            $stmt->execute([$username]);
+            $usernameExists = $stmt->fetchColumn() > 0;
+        }
+
+        if (!empty($email)) {
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $emailExists = $stmt->fetchColumn() > 0;
+        }
+
+        echo json_encode([
+            'usernameExists' => $usernameExists,
+            'emailExists' => $emailExists
+        ]);
+        exit;
 }

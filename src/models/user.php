@@ -9,6 +9,6 @@ class User
         public readonly string $username,
         public readonly string $email,
         public readonly string $passwordHash,
-        public readonly string $role = 'user',
+        public readonly string $role,
     ) {}
 }
