@@ -86,7 +86,8 @@ class ChatController {
         }
 
         try {
-            $stmt = $this->pdo->prepare("SELECT sender_username, message_text FROM messages WHERE user_id = :user_id ORDER BY created_at ASC");
+            // Add "created_at" to the SELECT statement
+            $stmt = $this->pdo->prepare("SELECT sender_username, message_text, created_at FROM messages WHERE user_id = :user_id ORDER BY created_at ASC");
             $stmt->execute(['user_id' => $targetUserId]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
         } catch (PDOException $e) {
