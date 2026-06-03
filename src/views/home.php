@@ -8,21 +8,25 @@
 </head>
 <body>
 
-<nav>
+<nav class="site-navigation-bar">
     <div class="nav-left">
         <a href="/">Home</a>
         <a href="/blog">Blog</a>
-        <?php if (session_status() == PHP_SESSION_NONE) session_start();  ?>
+        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
             <a href="/dashboard">Study Dashboard</a>
         <?php endif; ?>
     </div>
 
     <div class="nav-right">
-        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
         <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="/profile"><?= htmlspecialchars($_SESSION['username']); ?></a>
-            <a href="/logout">Logout</a>
+            <a href="/chat" class="nav-icon-link" title="Chat Support">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </a>
+            <a href="/profile" class="nav-profile-link"><?= htmlspecialchars($_SESSION['username']); ?></a>
+            <a href="/logout" class="nav-logout-btn">Logout</a>
         <?php else: ?>
             <a href="/login">Login</a>
             <a href="/register">Register</a>
@@ -31,25 +35,52 @@
 </nav>
 
 <header>
-    <h1>Welcome to My Professional Showcase</h1>
-    <p>Software Engineer | Academic Progress Portfolio</p>
+    <h1>Welcome to My Portfolio Website</h1>
+    <p>Radovan Vyšňan | HBO-ICT | HZ University of Applied Sciences</p>
 </header>
 
 <div class="container">
     <main>
+        <section id="biography">
+            <h2>About Me</h2>
+            <p>I am an ICT student, specializing in data science, back-end development and DevOps.</p>
+            <p>I'm currently a 3rd year bachelor student at HZ University of Applied Sciences. At the moment, I'm doing my Study Abroad Minor at the Frankfurt University of Applied Sciences in Germany.</p>
+        </section>
+
+        <section id="api-showcase" class="skills-section">
+            <h2>My Skills</h2>
+            <p>A representation of core engineering domains, programming frameworks, and infrastructural design competencies.</p>
+
+            <div class="skills-grid">
+                <span class="skill-pill">PHP (OOP & MVC)</span>
+                <span class="skill-pill">JavaScript (ES6+)</span>
+                <span class="skill-pill">SQL (MySQL / PostgreSQL)</span>
+                <span class="skill-pill">HTML5</span>
+
+                <span class="skill-pill">Docker Containerization</span>
+                <span class="skill-pill">Git & GitHub Actions CI/CD</span>
+                <span class="skill-pill">RESTful API Engineering</span>
+                <span class="skill-pill">Repository Design Pattern</span>
+
+                <span class="skill-pill">Linux Server Administration (Ubuntu/Debian)</span>
+                <span class="skill-pill">SSH Key Authentication & Hardening</span>
+                <span class="skill-pill">Firewall Configuration (UFW / Iptables)</span>
+            </div>
+        </section>
+
         <article id="academic-dashboard">
             <h2>Academic Progress Dashboard</h2>
             <small>
-                Tracking current educational milestones and European Credit Transfer (EC) metrics via read-only backend API client loops.
+                Current progress in my Study Abroad Minor (SAM) courses
             </small>
 
             <table>
                 <thead>
                 <tr>
-                    <th>Course Curriculum Title</th>
-                    <th>EC Weight</th>
-                    <th>Assigned Grade</th>
-                    <th>Execution Status</th>
+                    <th>Course Title</th>
+                    <th>EC</th>
+                    <th>Grade</th>
+                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody id="home-course-table-body">
@@ -61,21 +92,6 @@
                 </tbody>
             </table>
         </article>
-
-        <section id="biography">
-            <h2>About Me</h2>
-            <p>Hello! Welcome to my personal showcase application. I am an aspiring IT professional dedicated to clean code architecture, robust backend lifecycles, and elegant user interfaces.</p>
-            <p>This application is constructed using a decoupled PHP backend architecture running securely inside isolated container systems, ensuring high system stability and compliance with global development paradigms.</p>
-        </section>
-
-        <section id="api-showcase">
-            <h2>Dynamic API Integration</h2>
-            <p>The panel below actively pulls live JSON data from my custom backend RESTful endpoints utilizing client-side asynchronous <code>fetch()</code> requests:</p>
-
-            <div id="api-data-container">
-                <p><em>Loading live stream data via asynchronous fetch...</em></p>
-            </div>
-        </section>
     </main>
 
     <aside>
@@ -128,10 +144,10 @@
 
                     row.innerHTML = `
                         <td><strong>${escapeHtml(item.course_name)}</strong></td>
-                        <td>${escapeHtml(item.ec_points)} EC</td>
-                        <td>${escapeHtml(item.grade)}</td>
-                        <td>${stateBadge}</td>
-                    `;
+                        <td style="text-align: center; font-family: monospace;">${escapeHtml(item.ec_points)} EC</td>
+                        <td style="text-align: center; font-weight: bold; font-family: monospace;">${escapeHtml(item.grade)}</td>
+                        <td style="text-align: center;">${stateBadge}</td>
+`;
                     tbody.appendChild(row);
                 });
             })

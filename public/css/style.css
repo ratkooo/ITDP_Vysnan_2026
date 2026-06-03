@@ -37,6 +37,11 @@ nav {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    /* Pins the navigation bar to the top of the screen */
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensures the navbar stays on top of cards, tables, and buttons when scrolling */
 }
 
 /* Structural wrapping containers inside the nav */
@@ -57,6 +62,23 @@ nav a, nav span {
 nav a:hover {
     color: var(--accent);
     text-decoration: underline;
+}
+
+.nav-icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    color: #ffffff; /* Matches your default link text color */
+    transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-icon-link:hover {
+    color: var(--accent);
+}
+
+.nav-icon-link svg {
+    display: block;
 }
 
 /* -------------------------------------------------------------------------
@@ -242,4 +264,312 @@ input.invalid-field {
     background-color: #cbd5e1 !important;
     color: #64748b !important;
     cursor: not-allowed !important;
+}
+
+/* -------------------------------------------------------------------------
+   6. SKILLS SHOWCASE FEATURE COMPONENT
+   ------------------------------------------------------------------------- */
+.skills-section {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+}
+
+.skills-section h2 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.skills-section p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+.skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.skill-pill {
+    background-color: var(--light);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+#academic-dashboard table {
+    width: 100%;                  /* Forces table to fill out the entire main container */
+    border-collapse: collapse;    /* Eliminates double-border spacing glitches */
+    margin-top: 1.5rem;
+}
+
+#academic-dashboard th {
+    background-color: var(--light);
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+}
+
+/* Increases cell padding to push columns far apart horizontally */
+#academic-dashboard th,
+#academic-dashboard td {
+    padding: 1rem 2rem !important; /* Overrides any legacy inline padding properties */
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Explicit Width Constraints to prevent text compression */
+#academic-dashboard th:nth-child(1),
+#academic-dashboard td:nth-child(1) {
+    width: 45%;                   /* Allocates primary breathing space to Course Titles */
+}
+
+#academic-dashboard th:nth-child(2),
+#academic-dashboard td:nth-child(2) {
+    width: 15%;                   /* EC Column */
+    text-align: center;
+}
+
+#academic-dashboard th:nth-child(3),
+#academic-dashboard td:nth-child(3) {
+    width: 15%;                   /* Grade Column */
+    text-align: center;
+}
+
+#academic-dashboard th:nth-child(4),
+#academic-dashboard td:nth-child(4) {
+    width: 25%;                   /* Status Badge Column */
+    text-align: center;
+}
+
+.card-account-list {
+    width: 100%;                  /* Forces the card component to match the full width of the top table */
+    box-sizing: border-box;       /* Includes padding and borders in the element's total width */
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-top: 2rem;            /* Clean vertical separation between components */
+}
+
+.card-account-list h3 {
+    color: var(--primary);
+    font-size: 1.25rem;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--light);
+}
+
+.card-account-list table {
+    width: 100%;                  /* Stretches the table across the newly expanded card container */
+    border-collapse: collapse;
+}
+
+.card-account-list th {
+    background-color: var(--light);
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;         /* Matching padding sizes for clear, scannable data grids */
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+}
+
+.card-account-list td {
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+/* Optional proportional column widths to keep text from looking compressed */
+.card-account-list th:nth-child(1), .card-account-list td:nth-child(1) { width: 40%; } /* Username */
+.card-account-list th:nth-child(2), .card-account-list td:nth-child(2) { width: 25%; } /* Role */
+.card-account-list th:nth-child(3), .card-account-list td:nth-child(3) { width: 35%; } /* Registered At */
+
+.card-account-list tbody tr:nth-child(even) {
+    background-color: rgba(248, 250, 252, 0.6);
+}
+
+.card-account-list tbody tr:hover {
+    background-color: var(--light);
+}
+
+/* -------------------------------------------------------------------------
+   11. ASYNCHRONOUS SUPPORT CHAT HUB COMPONENT
+   ------------------------------------------------------------------------- */
+.chat-layout-wrapper {
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.chat-card-box {
+    display: flex;
+    height: 550px;
+    padding: 0 !important; /* Overrides default card inner spacing to let components touch container bounds */
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+/* Admin Sidebar Threads Navigation Panel */
+.chat-sidebar {
+    width: 280px;
+    border-right: 1px solid var(--border);
+    background: var(--light);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.chat-sidebar-title {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.threads-list-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* User Threads Selection Link Items */
+.thread-item-pill {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.thread-item-pill:hover {
+    background: rgba(0, 0, 0, 0.02);
+    transform: translateX(2px);
+}
+
+.thread-item-pill.active {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary);
+}
+
+/* Main Conversation Stream Panel */
+.chat-main-stream {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+.chat-stream-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+}
+
+#chat-header-title {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1.05rem;
+}
+
+/* Message Timeline Container viewport */
+.chat-messages-body {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.chat-empty-placeholder {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin: auto;
+    font-size: 0.95rem;
+}
+
+/* Unified Enterprise Style Message Bubbles */
+.chat-message-card {
+    margin-bottom: 0.25rem;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    max-width: 75%;
+    align-self: flex-start;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.chat-message-card small {
+    display: block;
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.chat-message-card p {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* Bottom Text Form Input Control Panel Container */
+.chat-input-area {
+    display: flex;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    gap: 0.75rem;
+    background: #ffffff;
+}
+
+.chat-input-field {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s ease-in-out;
+    color: var(--text);
+}
+
+.chat-input-field:focus {
+    border-color: var(--primary);
+}
+
+.chat-submit-btn {
+    padding: 0.65rem 1.75rem;
+    font-weight: 500;
+    cursor: pointer;
 }

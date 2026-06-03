@@ -78,6 +78,26 @@
             <?php endforeach; ?>
             </tbody>
         </table>
+
+        <div class="container">
+            <div class="card card-account-list">
+                <h3>Active Database Accounts List</h3>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Registered at</th>
+                    </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="3" class="table-loading-row">Fetching real-time records timeline...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <aside>
@@ -176,6 +196,54 @@
                     window.location.reload();
                 }
             });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        loadRecentUsers();
+    });
+
+    function loadRecentUsers() {
+        fetch('/api/recent-registrations')
+            .then(response => {
+                if (!response.ok) throw new Error("Network database list collection failure.");
+                return response.json();
+            })
+            .then(usersArray => {
+                const tableBody = document.getElementById('users-table-body');
+                tableBody.innerHTML = ""; // Clear existing placeholder layout elements
+
+                if (usersArray.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No accounts exist within db context.</td></tr>`;
+                    return;
+                }
+
+                // Map loop array into structural table cells
+                usersArray.forEach(user => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td><strong>${escapeHtml(user.username)}</strong></td>
+                        <td><span class="tag">${escapeHtml(user.role)}</span></td>
+                        <td>${escapeHtml(user.created_at)}</td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                document.getElementById('users-table-body').innerHTML =
+                    `<tr><td colspan="3" style="text-align:center; color:#dc3545;">Failed to load system dataset.</td></tr>`;
+                console.error("User collection fetch pipeline error:", err);
+            });
+    }
+
+    // XSS mitigation parsing string safety utility helper
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 </script>
 </body>

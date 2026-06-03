@@ -5,6 +5,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Controllers\AuthController;
 use App\Controllers\ProjectApiController;
 use App\Repositories\MySQLUserRepository;
+use App\Controllers\ChatController;
+use App\Repositories\MySQLMessageRepository;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
@@ -41,7 +43,8 @@ try {
 // =========================================================================
 $userRepository = new MySQLUserRepository($pdo);
 $authController = new AuthController($userRepository);
-//$apiController  = new ProjectApiController();
+$messageRepository = new MySQLMessageRepository($pdo);
+$chatController = new ChatController($pdo);
 
 // =========================================================================
 // 3. REQUEST PARSING & CLEAN URL EXTRACTION
@@ -61,18 +64,12 @@ switch ($requestUri) {
 
     // Blog Publishing Workflow Index Area
     case '/blog':
-        require_once __DIR__ . '/../src/Views/blog/index.php';
+        require __DIR__ . '/../src/Views/blog/index.php';
         break;
 
-    // Individual Isolated Blog Article View
-    case '/blog/view':
-        require_once __DIR__ . '/../src/Views/blog/view.php';
+    case '/blogpost':
+        require __DIR__ . '/../src/Views/blog/blog.php';
         break;
-
-    case '/apipage':
-        // Renders the dedicated frontend page demonstrating fetch() operations
-        require_once __DIR__ . '/../src/Views/apipage.php';
-        exit;
 
     // User Session Authentication Entrypoint
     case '/register':
@@ -401,4 +398,21 @@ switch ($requestUri) {
 
         echo json_encode($recentUsers);
         exit;
+
+    case '/chat':
+        $chatController->index();
+        break;
+    case '/api/chat-threads':
+        $chatController->getThreads();
+        break;
+
+    case '/api/chat-messages':
+        $chatController->getMessages();
+        break;
+
+    case '/api/chat-send':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $chatController->sendMessage();
+        }
+        break;
 }
