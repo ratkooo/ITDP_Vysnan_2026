@@ -5,15 +5,15 @@
  * - Portfolio biography management: Admins can edit/update professional bio
  * - Skills management system: Admins can create/edit/delete professional skills
  * - Dashboard tracking: Displays study programme progress and academic roadmap
- * 
+ *
  * ITDP Criteria: Usability (Nielsen Heuristics)
  * - Heuristic 1: Visibility of System Status (showing current bio/skills)
  * - Heuristic 5: Error Prevention (input validation on form fields)
  * - Heuristic 9: Help Users Recognize/Diagnose/Recover (error messages and edit forms)
- * 
+ *
  * ITDP Criteria: Client-Side APIs (Section 3.6)
  * - Skills management uses POST endpoints for CRUD operations on professional skills
- * 
+ *
  * ITDP Criteria: Security
  * - Role-based access control: Only admins can modify bio/skills
  * - Prepared statements prevent SQL injection
