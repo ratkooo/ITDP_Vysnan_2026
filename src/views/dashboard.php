@@ -1,3 +1,14 @@
+<tbody id="course-table-body">
+<?php if (isset($courses) && is_array($courses)) : ?>
+    <?php foreach ($courses as $course) : ?>
+        <tr id="row-<?= (int)$course['id']; ?>">
+            </tr>
+    <?php endforeach; ?>
+<?php else : ?>
+    <tr><td colspan="5">No courses found.</td></tr>
+<?php endif; ?>
+</tbody>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +29,7 @@
     <main>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h2>Course list</h2>
-            <button class="btn" onclick="openNewCourseForm()">+ Add New Module</button>
+            <button class="btn" onclick="openNewCourseForm()">➕ Add New Module</button>
         </div>
 
         <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; background: #ffffff; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
@@ -83,7 +94,7 @@
             <h2>Credit Summary</h2>
             <p>Total EC:</p>
             <h3 style="font-size: 2.2rem; color: var(--success); margin: 0.5rem 0;">
-                <span id="metrics-ec-sum"><?= $totalPassedEC; ?></span> / 60 EC
+                <span id="metrics-ec-sum"><?= isset($totalPassedEC) ? (int)$totalPassedEC : 0; ?></span> / 60 EC
             </h3>
         </sidebar>
     </aside>

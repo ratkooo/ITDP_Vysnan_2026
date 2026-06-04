@@ -7,9 +7,9 @@ use PDOException;
 
 class ProfileController
 {
-    private $pdo;
+    private PDO $pdo;
 
-    public function __construct($pdo)
+    public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
         if (session_status() === PHP_SESSION_NONE) {
@@ -19,20 +19,17 @@ class ProfileController
 
     /**
      * Endpoint: GET /api/profile-data
-     * Publicly fetches the current bio and skills list
      */
-    public function getProfileData()
+    public function getProfileData(): void
     {
         header('Content-Type: application/json');
         try {
-            // Get Biography Text
             $bioStmt = $this->pdo->query("SELECT bio_text FROM bio_settings WHERE id = 1");
-            $bio = $bioStmt->fetch(PDO::FETCH_ASSOC);
+            $bio = $bioStmt ? $bioStmt->fetch(PDO::FETCH_ASSOC) : false;
             $bioText = $bio ? $bio['bio_text'] : '';
 
-            // Get Skills List
             $skillsStmt = $this->pdo->query("SELECT id, skill_name FROM skills ORDER BY id DESC");
-            $skills = $skillsStmt->fetchAll(PDO::FETCH_ASSOC);
+            $skills = $skillsStmt ? $skillsStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
             echo json_encode([
                 'bio' => $bioText,
@@ -47,7 +44,7 @@ class ProfileController
     /**
      * Endpoint: POST /api/admin/update-bio
      */
-    public function updateBio()
+    public function updateBio(): void
     {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -56,8 +53,9 @@ class ProfileController
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        $bioText = isset($input['bio_text']) ? trim($input['bio_text']) : '';
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput !== false ? $rawInput : '', true);
+        $bioText = isset($input['bio_text']) ? trim((string)$input['bio_text']) : '';
 
         try {
             $stmt = $this->pdo->prepare("UPDATE bio_settings SET bio_text = :bio_text WHERE id = 1");
@@ -72,7 +70,7 @@ class ProfileController
     /**
      * Endpoint: POST /api/admin/skills/create
      */
-    public function createSkill()
+    public function createSkill(): void
     {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -81,8 +79,9 @@ class ProfileController
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        $skillName = isset($input['skill_name']) ? trim($input['skill_name']) : '';
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput !== false ? $rawInput : '', true);
+        $skillName = isset($input['skill_name']) ? trim((string)$input['skill_name']) : '';
 
         if (empty($skillName)) {
             echo json_encode(['success' => false, 'error' => 'Skill name cannot be empty']);
@@ -102,7 +101,7 @@ class ProfileController
     /**
      * Endpoint: POST /api/admin/skills/update
      */
-    public function updateSkill()
+    public function updateSkill(): void
     {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -111,9 +110,10 @@ class ProfileController
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        $id = isset($input['id']) ? intval($input['id']) : 0;
-        $skillName = isset($input['skill_name']) ? trim($input['skill_name']) : '';
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput !== false ? $rawInput : '', true);
+        $id = isset($input['id']) ? (int)$input['id'] : 0;
+        $skillName = isset($input['skill_name']) ? trim((string)$input['skill_name']) : '';
 
         if (!$id || empty($skillName)) {
             echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
@@ -133,7 +133,7 @@ class ProfileController
     /**
      * Endpoint: POST /api/admin/skills/delete
      */
-    public function deleteSkill()
+    public function deleteSkill(): void
     {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -142,8 +142,9 @@ class ProfileController
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        $id = isset($input['id']) ? intval($input['id']) : 0;
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput !== false ? $rawInput : '', true);
+        $id = isset($input['id']) ? (int)$input['id'] : 0;
 
         try {
             $stmt = $this->pdo->prepare("DELETE FROM skills WHERE id = :id");

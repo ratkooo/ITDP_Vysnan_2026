@@ -1,8 +1,6 @@
-/* public/css/style.css */
-
 /* -------------------------------------------------------------------------
-   1. GLOBAL SYSTEM DESIGN VARIABLES & RESET LAYER
-   ------------------------------------------------------------------------- */
+    1. GLOBAL SYSTEM DESIGN VARIABLES & RESET LAYER
+    ------------------------------------------------------------------------- */
 :root {
     --primary: #0f172a;       /* Slate 900 */
     --secondary: #1e293b;     /* Slate 800 */
@@ -28,8 +26,8 @@ body {
 }
 
 /* -------------------------------------------------------------------------
-   2. REUSABLE FLEXBOX TOP NAVIGATION LAYER (Aligns to Right Corner)
-   ------------------------------------------------------------------------- */
+    2. REUSABLE FLEXBOX TOP NAVIGATION LAYER (Aligns to Right Corner)
+    ------------------------------------------------------------------------- */
 nav {
     background-color: var(--primary);
     padding: 0.75rem 2rem;
@@ -112,8 +110,8 @@ nav a:hover {
 }
 
 /* -------------------------------------------------------------------------
-   3. STRUCTURAL CONTENT GRID LAYOUT
-   ------------------------------------------------------------------------- */
+    3. STRUCTURAL CONTENT GRID LAYOUT
+    ------------------------------------------------------------------------- */
 header {
     background: #ffffff;
     padding: 3rem 1.5rem;
@@ -158,8 +156,8 @@ sidebar {
 }
 
 /* -------------------------------------------------------------------------
-   4. COMPONENT LEVEL STYLING (Articles, Tables, Forms & Actions)
-   ------------------------------------------------------------------------- */
+    4. COMPONENT LEVEL STYLING (Articles, Tables, Forms & Actions)
+    ------------------------------------------------------------------------- */
 article {
     background: #ffffff;
     padding: 2rem;
@@ -240,8 +238,8 @@ form textarea {
 }
 
 /* -------------------------------------------------------------------------
-   5. DECORATOR STYLES & MESSAGING UTILITIES
-   ------------------------------------------------------------------------- */
+    5. DECORATOR STYLES & MESSAGING UTILITIES
+    ------------------------------------------------------------------------- */
 .text-success { color: var(--success); font-weight: 600; }
 .text-error   { color: var(--error); font-weight: 600; }
 hr { border: 0; height: 1px; background: var(--border); margin: 2rem 0; }
@@ -297,8 +295,8 @@ input.invalid-field {
 }
 
 /* -------------------------------------------------------------------------
-   6. SKILLS SHOWCASE FEATURE COMPONENT
-   ------------------------------------------------------------------------- */
+    6. SKILLS SHOWCASE FEATURE COMPONENT
+    ------------------------------------------------------------------------- */
 .skills-section {
     background: #ffffff;
     padding: 2rem;
@@ -439,8 +437,8 @@ input.invalid-field {
 }
 
 /* -------------------------------------------------------------------------
-   11. ASYNCHRONOUS SUPPORT CHAT HUB COMPONENT
-   ------------------------------------------------------------------------- */
+    11. ASYNCHRONOUS SUPPORT CHAT HUB COMPONENT
+    ------------------------------------------------------------------------- */
 .chat-layout-wrapper {
     margin-top: 2rem;
     width: 100%;
@@ -681,8 +679,8 @@ input.invalid-field {
 }
 
 /* ==========================================================================
-   Admin Management & Skills Component CSS
-   ========================================================================== */
+    Admin Management & Skills Component CSS
+    ========================================================================== */
 .profile-section {
     margin-bottom: 2.5rem;
     padding: 1.5rem;

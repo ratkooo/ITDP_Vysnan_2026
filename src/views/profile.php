@@ -21,14 +21,14 @@
 
         <?php if (isset($_SESSION['profile_success'])) : ?>
             <div class="alert success" style="color: #28a745; font-weight: bold; margin-bottom: 15px;">
-                <?= $_SESSION['profile_success']; ?>
+                <?= htmlspecialchars($_SESSION['profile_success']); ?>
                 <?php unset($_SESSION['profile_success']); ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['profile_error'])) : ?>
             <div class="alert error" style="color: #dc3545; font-weight: bold; margin-bottom: 15px;">
-                <?= $_SESSION['profile_error']; ?>
+                <?= htmlspecialchars($_SESSION['profile_error']); ?>
                 <?php unset($_SESSION['profile_error']); ?>
             </div>
         <?php endif; ?>
@@ -36,13 +36,17 @@
         <form action="/profile" method="POST" id="profile-form">
             <div>
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" value="<?= htmlspecialchars($userProfile['username']) ?>" required autocomplete="username">
+                <input type="text" id="username" name="username" 
+                       value="<?= htmlspecialchars($userProfile['username'] ?? '') ?>" 
+                       required autocomplete="username">
                 <span id="username-error" class="validation-message"></span>
             </div>
 
             <div>
                 <label for="email">Email Address</label>
-                <input type="text" id="email" name="email" value="<?= htmlspecialchars($userProfile['email']) ?>" required autocomplete="email">
+                <input type="text" id="email" name="email" 
+                       value="<?= htmlspecialchars($userProfile['email'] ?? '') ?>" 
+                       required autocomplete="email">
                 <span id="email-error" class="validation-message"></span>
             </div>
 

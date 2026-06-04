@@ -19,6 +19,9 @@ class MySQLMessageRepository implements MessageRepositoryInterface
         $this->db = $db;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getActiveThreads(): array
     {
         $stmt = $this->db->query("
@@ -27,13 +30,22 @@ class MySQLMessageRepository implements MessageRepositoryInterface
             JOIN users u ON m.user_id = u.id 
             ORDER BY m.id DESC
         ");
+
+        if ($stmt === false) {
+            return [];
+        }
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getMessagesByUserId(int $userId): array
     {
         $stmt = $this->db->prepare("SELECT * FROM messages WHERE user_id = ? ORDER BY created_at ASC");
         $stmt->execute([$userId]);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -43,6 +55,7 @@ class MySQLMessageRepository implements MessageRepositoryInterface
             INSERT INTO messages (user_id, sender_id, sender_username, message_text) 
             VALUES (?, ?, ?, ?)
         ");
+
         return $stmt->execute([
             $message->userId,
             $message->senderId,

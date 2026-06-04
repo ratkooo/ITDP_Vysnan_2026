@@ -1,3 +1,11 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +31,7 @@
         <div class="chat-main-stream">
             <div class="chat-stream-header">
                 <div id="chat-header-title">
-                    <?php echo ($isAdmin) ? 'Select a user thread' : 'Support Live Chat'; ?>
+                    <?php echo ($isAdmin) ? 'Chat' : 'Support Live Chat'; ?>
                 </div>
             </div>
 

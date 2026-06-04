@@ -2,12 +2,12 @@
 
 namespace App\Controllers;
 
-use App\Repositories\userRepositoryInterface;
+use App\Repositories\UserRepositoryInterface;
 
 class AuthController
 {
     public function __construct(
-        private readonly userRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository
     ) {
         if (session_status() === PHP_SESSION_NONE) {
             // OWASP Security: Ensuring session configuration matches security baselines
@@ -49,8 +49,9 @@ class AuthController
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
+            $sName = session_name();
             setcookie(
-                session_name(),
+                $sName !== false ? $sName : 'PHPSESSID',
                 '',
                 time() - 42000,
                 $params["path"],
