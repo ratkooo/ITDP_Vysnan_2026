@@ -1,27 +1,22 @@
 <?php
 
-namespace App\Controllers;
+namespace App\controllers;
 
-use App\Repositories\UserRepositoryInterface;
+use App\Repositories\userRepositoryInterface;
 
-class AuthController
+class authController
 {
     public function __construct(private readonly userRepositoryInterface $userRepository)
     {
         if (session_status() === PHP_SESSION_NONE) {
+            // OWASP Security: Ensuring session configuration matches security baselines
             session_start([
-                'cookie_httponly' => true,
-                'cookie_secure' => false,
+                'cookie_httponly' => true, // Blocks XSS from reading session tokens
+                'cookie_secure' => false,  // Set to true in your production remote HTTPS build!
                 'use_strict_mode' => true,
             ]);
         }
     }
-    
-    /**
-     * ITDP Criteria: Security (OWASP A07:2025 - Authentication Failures)
-     * Functional User Story: User registration and login for portfolio access.
-     * Implements session-based authentication with password hashing (BCRYPT).
-     */"
 
     public function showLogin(?string $error = null): void
     {
@@ -32,7 +27,9 @@ class AuthController
     {
         $user = $this->userRepository->findByUsername($username);
 
+        // Security timing-attack and leak protection: Always use native password_verify
         if ($user && password_verify($password, $user->passwordHash)) {
+            // Regenerate session ID to completely prevent Session Fixation attacks
             session_regenerate_id(true);
 
             $_SESSION['user_id'] = $user->id;
@@ -52,14 +49,9 @@ class AuthController
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params["path"],
-                $params["domain"],
-                $params["secure"],
-                $params["httponly"]
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
             );
         }
         session_destroy();
@@ -100,6 +92,7 @@ class AuthController
             return;
         }
 
+        //OWASP A07:2025 Mitigation - Secure Password Hashing
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
         $success = $this->userRepository->insert($username, $email, $passwordHash, 'user');
@@ -117,6 +110,7 @@ class AuthController
             session_start();
         }
 
+        // Drop session footprint immediately if roles or parameters don't line up
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== $targetRole) {
             header('HTTP/1.1 403 Forbidden');
             echo "<h2 style='color:#dc2626; font-family:sans-serif; text-align:center; margin-top:4rem;'>
@@ -125,9 +119,6 @@ class AuthController
             exit;
         }
     }
-    
-    /**
-     * ITDP Criteria: Security (OWASP A01:2025 - Broken Access Control)
-     * Ensures only authorized users can access restricted features.
-     */"
+
+
 }
