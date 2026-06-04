@@ -32,7 +32,7 @@
             </tr>
             </thead>
             <tbody id="course-table-body">
-            <?php foreach ($courses as $course): ?>
+            <?php foreach ($courses as $course) : ?>
                 <tr id="row-<?= $course['id']; ?>" style="border-bottom: 1px solid var(--border);">
                     <td style="padding: 0.75rem;" class="cell-name"><?= htmlspecialchars($course['course_name']); ?></td>
                     <td style="padding: 0.75rem;" class="cell-ec"><?= (int)$course['ec_points']; ?> EC</td>

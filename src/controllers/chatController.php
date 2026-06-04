@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Controllers; // <-- THIS MUST BE HERE
+namespace App\Controllers;
 
-use PDO;          // Ensures PDO works inside the namespace
-use PDOException; // Ensures error handling catches correctly
+use PDO;
+use PDOException;
 
 class ChatController
 {

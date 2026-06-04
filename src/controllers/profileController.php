@@ -72,7 +72,8 @@ class ProfileController
     /**
      * Endpoint: POST /api/admin/skills/create
      */
-    public function createSkill() {
+    public function createSkill()
+    {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             http_response_code(403);

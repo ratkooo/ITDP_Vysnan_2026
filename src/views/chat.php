@@ -12,7 +12,7 @@
 <div class="container chat-layout-wrapper">
     <div class="chat-card-box" style="width: 100%;">
 
-        <?php if (!empty($isAdmin) && $isAdmin === true): ?>
+        <?php if (!empty($isAdmin) && $isAdmin === true) : ?>
             <div class="chat-sidebar">
                 <h3 class="chat-sidebar-title">Active Users</h3>
                 <div class="threads-list-box" id="adminThreadsList">
@@ -251,7 +251,7 @@
     }
 
     // Initialize only for admins
-    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') : ?>
     loadAdminThreads();
     setInterval(loadAdminThreads, 5000); // Refresh list every 5 seconds
     <?php endif; ?>

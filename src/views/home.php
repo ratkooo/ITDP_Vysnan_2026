@@ -23,7 +23,6 @@ $errorMessage = "";
 // ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
     if (isset($_POST['action'])) {
-
         // 1. Update Biography Text File Entry
         if ($_POST['action'] === 'update_bio' && isset($_POST['bio'])) {
             try {
@@ -119,19 +118,19 @@ try {
 
 <div class="container">
     <main>
-        <?php if (!empty($errorMessage)): ?>
+        <?php if (!empty($errorMessage)) : ?>
             <p class="text-error" style="margin-bottom: 1rem;"><?= htmlspecialchars($errorMessage); ?></p>
         <?php endif; ?>
 
         <section id="biography">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2>About Me</h2>
-                <?php if ($isAdmin && !isset($_GET['edit_bio'])): ?>
+                <?php if ($isAdmin && !isset($_GET['edit_bio'])) : ?>
                     <a href="/?edit_bio=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; text-decoration: none;">✏️ Edit Bio</a>
                 <?php endif; ?>
             </div>
 
-            <?php if ($isAdmin && isset($_GET['edit_bio'])): ?>
+            <?php if ($isAdmin && isset($_GET['edit_bio'])) : ?>
                 <form method="POST" action="/" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 6px;">
                     <input type="hidden" name="action" value="update_bio">
                     <label for="bio-textarea" style="display:block; font-weight:bold; margin-bottom:5px;">Update Biography Text:</label>
@@ -141,7 +140,7 @@ try {
                         <a href="/" class="btn" style="padding: 5px 15px; background-color: #64748b; text-decoration: none; margin-left: 5px;">Cancel</a>
                     </div>
                 </form>
-            <?php else: ?>
+            <?php else : ?>
                 <div id="bio-content">
                     <?php
                     if (!empty($currentBio)) {
@@ -159,12 +158,12 @@ try {
         <section id="api-showcase" class="skills-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2>My Skills</h2>
-                <?php if ($isAdmin && !isset($_GET['add_skill']) && !isset($_GET['edit_skill'])): ?>
+                <?php if ($isAdmin && !isset($_GET['add_skill']) && !isset($_GET['edit_skill'])) : ?>
                     <a href="/?add_skill=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; background-color: #3b82f6; text-decoration: none;">➕ Add New Skill</a>
                 <?php endif; ?>
             </div>
 
-            <?php if ($isAdmin && isset($_GET['add_skill'])): ?>
+            <?php if ($isAdmin && isset($_GET['add_skill'])) : ?>
                 <form method="POST" action="/" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; display: flex; gap: 8px; align-items: center;">
                     <input type="hidden" name="action" value="create_skill">
                     <input type="text" name="skill_name" placeholder="Enter professional skill label..." required style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
@@ -173,7 +172,7 @@ try {
                 </form>
             <?php endif; ?>
 
-            <?php if ($isAdmin && isset($_GET['edit_skill'], $_GET['skill_id'])): ?>
+            <?php if ($isAdmin && isset($_GET['edit_skill'], $_GET['skill_id'])) : ?>
                 <form method="POST" action="/" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; display: flex; gap: 8px; align-items: center;">
                     <input type="hidden" name="action" value="update_skill">
                     <input type="hidden" name="id" value="<?= htmlspecialchars($_GET['skill_id']); ?>">
@@ -186,13 +185,13 @@ try {
             <p>A representation of core engineering domains, programming frameworks, and infrastructural design competencies.</p>
 
             <div class="skills-grid" id="skills-grid">
-                <?php if (empty($skillsList)): ?>
+                <?php if (empty($skillsList)) : ?>
                     <p style="color: #64748b; font-style: italic;">No skills registered.</p>
-                <?php else: ?>
-                    <?php foreach ($skillsList as $skill): ?>
+                <?php else : ?>
+                    <?php foreach ($skillsList as $skill) : ?>
                         <span class="skill-pill" style="<?= $isAdmin ? 'display: inline-flex; align-items: center; gap: 8px;' : '' ?>">
                             <span><?= htmlspecialchars($skill['skill_name']); ?></span>
-                            <?php if ($isAdmin): ?>
+                            <?php if ($isAdmin) : ?>
                                 <span style="display:inline-flex; gap: 4px; margin-left:4px; font-size:0.9em; border-left:1px solid rgba(255,255,255,0.2); padding-left:6px;">
                                     <a href="/?edit_skill=1&skill_id=<?= $skill['id']; ?>&current_name=<?= urlencode($skill['skill_name']); ?>" title="Edit Skill" style="text-decoration:none;">✏️</a>
 

@@ -1,14 +1,21 @@
+<?php
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+
 <nav class="site-navigation-bar">
     <div class="nav-left">
         <a href="/">Home</a>
         <a href="/blog">Blog</a>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') : ?>
             <a href="/dashboard">Study Dashboard</a>
         <?php endif; ?>
     </div>
 
     <div class="nav-right">
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['user_id'])) : ?>
             <a href="/chat" class="nav-icon-link" title="Chat Support">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -17,7 +24,7 @@
             </a>
             <a href="/profile" class="nav-profile-link"><?= htmlspecialchars($_SESSION['username']); ?></a>
             <a href="/logout" class="nav-logout-btn">Logout</a>
-        <?php else: ?>
+        <?php else : ?>
             <a href="/login">Login</a>
             <a href="/register">Register</a>
         <?php endif; ?>

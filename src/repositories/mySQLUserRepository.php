@@ -7,7 +7,9 @@ use PDO;
 
 class MySQLUserRepository implements UserRepositoryInterface
 {
-    public function __construct(private readonly PDO $pdo) {}
+    public function __construct(private readonly PDO $pdo)
+    {
+    }
 
     public function findByUsername(string $username): ?User
     {

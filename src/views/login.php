@@ -32,14 +32,14 @@ if (session_status() === PHP_SESSION_NONE) {
             Enter your authorization tokens to access admin panels.
         </p>
 
-        <?php if (!empty($_SESSION['registration_success'])): ?>
+        <?php if (!empty($_SESSION['registration_success'])) : ?>
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; padding: 0.85rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
                 <span>✔</span> <span><?= htmlspecialchars($_SESSION['registration_success']); ?></span>
             </div>
             <?php unset($_SESSION['registration_success']); ?>
         <?php endif; ?>
 
-        <?php if (!empty($_SESSION['login_error'])): ?>
+        <?php if (!empty($_SESSION['login_error'])) : ?>
             <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.85rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.95rem; font-weight: 500;">
                 ❌ <?= htmlspecialchars($_SESSION['login_error']); ?>
             </div>

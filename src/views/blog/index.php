@@ -75,12 +75,12 @@ try {
         <h2>Latest Publications</h2>
         <p style="color: #64748b; margin-bottom: 1.5rem;">Explore short excerpts of architectural case studies and design logs.</p>
 
-        <?php if (!empty($errorMessage)): ?>
+        <?php if (!empty($errorMessage)) : ?>
             <p class="text-error" style="margin-bottom: 1rem;"><?= htmlspecialchars($errorMessage); ?></p>
         <?php endif; ?>
 
-        <?php if ($isAdmin): ?>
-            <?php if (isset($_GET['new']) && $_GET['new'] == '1'): ?>
+        <?php if ($isAdmin) : ?>
+            <?php if (isset($_GET['new']) && $_GET['new'] == '1') : ?>
                 <article>
                     <h3>Compose New Platform Publication</h3>
                     <form method="POST" action="/blog">
@@ -107,21 +107,21 @@ try {
                         </div>
                     </form>
                 </article>
-            <?php else: ?>
+            <?php else : ?>
                 <p style="margin-bottom: 1.5rem;">
                     <a href="/blog?new=1" class="btn">➕ Add New Publication</a>
                 </p>
             <?php endif; ?>
         <?php endif; ?>
 
-        <?php if (empty($posts)): ?>
+        <?php if (empty($posts)) : ?>
             <article>
                 <h3>No Publications Found</h3>
                 <small>Archive Empty</small>
                 <p>Check back later for newly recorded field insights.</p>
             </article>
-        <?php else: ?>
-            <?php foreach ($posts as $post): ?>
+        <?php else : ?>
+            <?php foreach ($posts as $post) : ?>
                 <article>
                     <h3><?= htmlspecialchars($post['title']); ?></h3>
                     <small>
@@ -141,9 +141,9 @@ try {
     <aside>
         <sidebar>
             <h2>Administrative Rights</h2>
-            <?php if ($isAdmin): ?>
+            <?php if ($isAdmin) : ?>
                 <p class="text-success">✔ Signed in with admin privileges.</p>
-            <?php else: ?>
+            <?php else : ?>
                 <p>Sign in as an admin account to activate content creation features across this node matrix.</p>
             <?php endif; ?>
         </sidebar>

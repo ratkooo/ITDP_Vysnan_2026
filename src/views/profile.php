@@ -19,15 +19,17 @@
         <h2>Edit Profile Information</h2>
         <p>Modify your account information.</p>
 
-        <?php if (isset($_SESSION['profile_success'])): ?>
+        <?php if (isset($_SESSION['profile_success'])) : ?>
             <div class="alert success" style="color: #28a745; font-weight: bold; margin-bottom: 15px;">
-                <?= $_SESSION['profile_success']; unset($_SESSION['profile_success']); ?>
+                <?= $_SESSION['profile_success']; ?>
+                <?php unset($_SESSION['profile_success']); ?>
             </div>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['profile_error'])): ?>
+        <?php if (isset($_SESSION['profile_error'])) : ?>
             <div class="alert error" style="color: #dc3545; font-weight: bold; margin-bottom: 15px;">
-                <?= $_SESSION['profile_error']; unset($_SESSION['profile_error']); ?>
+                <?= $_SESSION['profile_error']; ?>
+                <?php unset($_SESSION['profile_error']); ?>
             </div>
         <?php endif; ?>
 

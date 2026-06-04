@@ -22,7 +22,6 @@ $singlePost = null;
 // Handle Admin Lifecycle Mutators: Update and Delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
     if (isset($_POST['action'])) {
-
         // Operation A: Delete Row
         if ($_POST['action'] === 'delete' && isset($_POST['id'])) {
             try {
@@ -99,15 +98,15 @@ if (isset($_GET['id'])) {
 
 <div class="container">
     <main>
-        <?php if (!empty($errorMessage)): ?>
+        <?php if (!empty($errorMessage)) : ?>
             <article>
                 <p class="text-error" style="margin-bottom: 1rem;"><?= htmlspecialchars($errorMessage); ?></p>
                 <a href="/blog" class="btn">← Return to Blog Feed</a>
             </article>
         <?php endif; ?>
 
-        <?php if ($singlePost): ?>
-            <?php if ($isAdmin && isset($_GET['edit'])): ?>
+        <?php if ($singlePost) : ?>
+            <?php if ($isAdmin && isset($_GET['edit'])) : ?>
                 <article>
                     <h3>Modify System Article Instance</h3>
                     <form method="POST" action="/blogpost?id=<?= $singlePost['id']; ?>">
@@ -135,7 +134,7 @@ if (isset($_GET['id'])) {
                         </div>
                     </form>
                 </article>
-            <?php else: ?>
+            <?php else : ?>
                 <article>
                     <a href="/blog" style="text-decoration: none; font-weight: 600; color: #2563eb; display: inline-block; margin-bottom: 1rem;">← Back to Archive Feed</a>
 
@@ -152,7 +151,7 @@ if (isset($_GET['id'])) {
                         <?= nl2br(htmlspecialchars($singlePost['content'])); ?>
                     </div>
 
-                    <?php if ($isAdmin): ?>
+                    <?php if ($isAdmin) : ?>
                         <hr style="margin: 2rem 0;">
                         <div style="display: flex; gap: 0.5rem;">
                             <a href="/blogpost?id=<?= $singlePost['id']; ?>&edit=1" class="btn">Modify Post Content</a>
@@ -177,9 +176,9 @@ if (isset($_GET['id'])) {
             <a href="/" class="btn" style="width: 100%;">Return to Home Overview</a>
             <hr>
             <h2>Administrative Rights</h2>
-            <?php if ($isAdmin): ?>
+            <?php if ($isAdmin) : ?>
                 <p class="text-success">✔ Signed in with full alteration and content revision authorities.</p>
-            <?php else: ?>
+            <?php else : ?>
                 <p>Sign in as an admin account to activate modification tools across this viewpoint row.</p>
             <?php endif; ?>
         </sidebar>
