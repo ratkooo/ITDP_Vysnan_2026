@@ -8,28 +8,7 @@
 </head>
 <body>
 
-<nav>
-    <div class="nav-left">
-        <a href="/">Home</a>
-        <a href="/blog">Blog</a>
-        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <a href="/dashboard">Study Dashboard</a>
-        <?php endif; ?>
-    </div>
-
-    <div class="nav-right">
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <span style="color: white; font-weight: 500; margin: 0 1rem;">
-                <?= htmlspecialchars($_SESSION['username']); ?>
-            </span>
-            <a href="/logout">Logout</a>
-        <?php else: ?>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        <?php endif; ?>
-    </div>
-</nav>
+<?php require_once __DIR__ . '/navbar.php'; ?>
 
 <header>
     <h1>Study Programme Progress Dashboard</h1>
@@ -111,10 +90,6 @@
         </sidebar>
     </aside>
 </div>
-
-<footer>
-    <p>&copy; <?= date('Y'); ?> Portfolio App. Secure Session Environment.</p>
-</footer>
 
 <script>
     function enableInlineEdit(id, name, ec, grade, status) {

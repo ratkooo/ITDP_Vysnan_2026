@@ -27,35 +27,32 @@
             margin-top: 0.35rem;
             font-weight: 500;
         }
+
+        /* Flex layout adjustments for the thread item pills */
+        .thread-item-pill {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            cursor: pointer;
+        }
+
+        /* Notification badge styles for the sidebar list items */
+        .thread-badge {
+            background-color: #dc2626; /* Alert red tone */
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            line-height: 1;
+            margin-left: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 <body>
 
-<nav class="site-navigation-bar">
-    <div class="nav-left">
-        <a href="/">Home</a>
-        <a href="/blog">Blog</a>
-        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <a href="/dashboard">Study Dashboard</a>
-        <?php endif; ?>
-    </div>
-
-    <div class="nav-right">
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="/chat" class="nav-icon-link" title="Chat Support">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-            </a>
-            <a href="/profile" class="nav-profile-link"><?= htmlspecialchars($_SESSION['username']); ?></a>
-            <a href="/logout" class="nav-logout-btn">Logout</a>
-        <?php else: ?>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        <?php endif; ?>
-    </div>
-</nav>
+<?php require_once __DIR__ . '/navbar.php'; ?>
 
 <div class="container chat-layout-wrapper">
     <div class="chat-card-box" style="width: 100%;">
@@ -193,6 +190,9 @@
     loadMessages();
     setInterval(loadMessages, 2000);
 
+    /**
+     * Parses thread message statistics to inject sidebar real-time alert markers
+     */
     async function loadAdminThreads() {
         const sidebar = document.getElementById('adminThreadsList');
         if (!sidebar) return;
@@ -201,17 +201,55 @@
             const response = await fetch('/api/chat-threads');
             const threads = await response.json();
 
+            // Load tracking registry from localStorage
+            let seenThreads = JSON.parse(localStorage.getItem('chat_seen_threads') || '{}');
+
             sidebar.innerHTML = '';
             threads.forEach(thread => {
+                const uid = thread.user_id;
+                const totalCount = parseInt(thread.message_count || 0);
+                const lastSender = thread.last_sender;
+
+                // Sync currently selected chat thread snapshot count
+                if (activeTargetUserId == uid) {
+                    seenThreads[uid] = totalCount;
+                }
+
+                const lastSeenCount = seenThreads[uid] || 0;
+                const unreadCount = totalCount - lastSeenCount;
+
+                // Show badge only if new messages exist and were not sent by an admin
+                const showBadge = (unreadCount > 0 && lastSender !== 'admin' && activeTargetUserId != uid);
+
                 const pill = document.createElement('div');
                 pill.className = 'thread-item-pill';
+                if (activeTargetUserId == uid) {
+                    pill.classList.add('active-thread');
+                }
 
-                // FIX: Use 'thread_owner' instead of 'username'
-                pill.textContent = '@' + (thread.thread_owner || 'Unknown');
+                // Add name wrapper element
+                const nameLabel = document.createElement('span');
+                nameLabel.textContent = '@' + (thread.username || thread.thread_owner);
+                pill.appendChild(nameLabel);
 
-                pill.onclick = () => window.location.href = '/chat?user_id=' + thread.user_id;
+                // Inject notification marker element if requirements are fulfilled
+                if (showBadge) {
+                    const badge = document.createElement('span');
+                    badge.className = 'thread-badge';
+                    badge.textContent = unreadCount;
+                    pill.appendChild(badge);
+                }
+
+                pill.onclick = () => {
+                    seenThreads[uid] = totalCount;
+                    localStorage.setItem('chat_seen_threads', JSON.stringify(seenThreads));
+                    window.location.href = '/chat?user_id=' + uid;
+                };
+
                 sidebar.appendChild(pill);
             });
+
+            localStorage.setItem('chat_seen_threads', JSON.stringify(seenThreads));
         } catch (error) {
             console.error("Error loading threads:", error);
         }

@@ -36,7 +36,7 @@ class ChatController {
 
     /**
      * Endpoint: GET /api/chat-threads
-     * Fetches all non-admin users to populate the admin's sidebar thread list
+     * Fetches all non-admin users to populate the admin's sidebar thread list with notification metrics
      */
     public function getThreads() {
         header('Content-Type: application/json');
@@ -49,8 +49,18 @@ class ChatController {
         }
 
         try {
-            // Query matches fields expected by frontend loop (`user_id` and `thread_owner`)
-            $stmt = $this->pdo->query("SELECT id AS user_id, username AS thread_owner FROM users WHERE role = 'user' ORDER BY username ASC");
+            // Evaluates thread statistics per user to feed individual notification badges
+            $stmt = $this->pdo->query("
+                SELECT 
+                    u.id AS user_id, 
+                    u.username,
+                    u.username AS thread_owner,
+                    (SELECT COUNT(*) FROM messages WHERE user_id = u.id) AS message_count,
+                    (SELECT sender_username FROM messages WHERE user_id = u.id ORDER BY created_at DESC, id DESC LIMIT 1) AS last_sender
+                FROM users u 
+                WHERE u.role = 'user' 
+                ORDER BY u.username ASC
+            ");
             $threads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode($threads);
@@ -86,7 +96,6 @@ class ChatController {
         }
 
         try {
-            // Add "created_at" to the SELECT statement
             $stmt = $this->pdo->prepare("SELECT sender_username, message_text, created_at FROM messages WHERE user_id = :user_id ORDER BY created_at ASC");
             $stmt->execute(['user_id' => $targetUserId]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));

@@ -77,8 +77,26 @@ nav a:hover {
     color: var(--accent);
 }
 
-.nav-icon-link svg {
-    display: block;
+.nav-icon-link {
+    position: relative;
+    display: inline-block;
+}
+.nav-exclamation-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background-color: #dc2626; /* Crimson Red alert color */
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 900;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 0 0 2px #0f172a; /* Outer boundary border matching slate header background profiles */
 }
 
 /* -------------------------------------------------------------------------

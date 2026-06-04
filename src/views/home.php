@@ -8,31 +8,7 @@
 </head>
 <body>
 
-<nav class="site-navigation-bar">
-    <div class="nav-left">
-        <a href="/">Home</a>
-        <a href="/blog">Blog</a>
-        <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <a href="/dashboard">Study Dashboard</a>
-        <?php endif; ?>
-    </div>
-
-    <div class="nav-right">
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="/chat" class="nav-icon-link" title="Chat Support">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-            </a>
-            <a href="/profile" class="nav-profile-link"><?= htmlspecialchars($_SESSION['username']); ?></a>
-            <a href="/logout" class="nav-logout-btn">Logout</a>
-        <?php else: ?>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        <?php endif; ?>
-    </div>
-</nav>
+<?php require_once __DIR__ . '/navbar.php'; ?>
 
 <header>
     <h1>Welcome to My Portfolio Website</h1>
@@ -109,10 +85,6 @@
     </aside>
 </div>
 
-<footer>
-    <p>&copy; <?= date('Y'); ?> Portfolio App. Built using PSR-12 and Docker Engine.</p>
-</footer>
-
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         // Execute dynamic API consumer request
@@ -163,6 +135,91 @@
         if (!str) return '';
         return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
+
+    (function() {
+        const badge = document.getElementById('msgExclamationBadge');
+        if (!badge) return;
+
+        const isAdmin = <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ? 'true' : 'false'; ?>;
+
+        // FIXED: Regex checks for /chat or /chat.php anywhere in path structures to prevent broken evaluation rules
+        const isChatPage = /\/chat(\.php)?\/?$/.test(window.location.pathname);
+
+        // Immediate Guard: Completely suppress the exclamation badge if standard user lands inside the chat page
+        if (isChatPage && !isAdmin) {
+            badge.style.display = 'none';
+        }
+
+        async function checkGlobalMessages() {
+            try {
+                if (isAdmin) {
+                    const response = await fetch('/api/chat-threads');
+                    if (!response.ok) return;
+                    const threads = await response.json();
+
+                    let showBadge = false;
+                    let seenThreads = JSON.parse(localStorage.getItem('chat_seen_threads') || '{}');
+
+                    threads.forEach(thread => {
+                        const uid = thread.user_id;
+                        const count = parseInt(thread.message_count || 0);
+                        const lastSender = thread.last_sender;
+
+                        if (isChatPage && activeTargetUserId == uid) {
+                            seenThreads[uid] = count;
+                        }
+
+                        const lastSeenCount = seenThreads[uid] || 0;
+                        if (count > lastSeenCount && lastSender !== 'admin') {
+                            // If currently looking at this active thread right now, don't flash an alert
+                            if (isChatPage && activeTargetUserId == uid) {
+                                // Keep reading
+                            } else {
+                                showBadge = true;
+                            }
+                        }
+                    });
+
+                    localStorage.setItem('chat_seen_threads', JSON.stringify(seenThreads));
+                    badge.style.display = showBadge ? 'flex' : 'none';
+
+                } else {
+                    const response = await fetch('/api/chat-messages');
+                    if (!response.ok) return;
+                    const messages = await response.json();
+
+                    const count = messages.length;
+                    const lastMsg = messages[count - 1];
+
+                    if (isChatPage) {
+                        localStorage.setItem('chat_user_seen_count', count);
+                        badge.style.display = 'none';
+                    } else {
+                        const lastSeenCount = parseInt(localStorage.getItem('chat_user_seen_count') || '0');
+                        if (count > lastSeenCount && lastMsg && lastMsg.sender_username === 'admin') {
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling notifications:', error);
+            }
+        }
+
+        checkGlobalMessages();
+        setInterval(checkGlobalMessages, 3000);
+
+        if (isChatPage) {
+            const clearBadge = () => {
+                badge.style.display = 'none';
+                checkGlobalMessages();
+            };
+            window.addEventListener('focus', clearBadge);
+            document.addEventListener('click', clearBadge);
+        }
+    })();
 </script>
 </body>
 </html>
