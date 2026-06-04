@@ -1,5 +1,9 @@
-<?php?>
-
+<?php
+// FIX: Start the session at the absolute top before any HTML output occurs
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
