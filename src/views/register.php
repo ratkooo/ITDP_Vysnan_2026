@@ -1,5 +1,5 @@
+
 <?php
-// FIX: Start the session at the absolute top before any HTML output occurs
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -13,6 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <title>Create an Account</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
 
 <nav>
