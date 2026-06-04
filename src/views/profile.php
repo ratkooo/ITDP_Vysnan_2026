@@ -87,7 +87,7 @@
         submitBtn.disabled = !formIsValid;
     }
 
-    // 1. Username Real-time Availability Watcher (Synced to minimum 5-character constraint)
+    // 1. Username Real-time Availability Watcher 
     usernameInput.addEventListener('input', () => {
         clearTimeout(debounceTimer);
         const val = usernameInput.value.trim();
