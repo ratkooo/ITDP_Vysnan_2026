@@ -1,11 +1,11 @@
 <?php
 
-namespace App\repositories;
+namespace App\Repositories;
 
 use App\Models\User;
 use PDO;
 
-class mySQLUserRepository implements userRepositoryInterface
+class MySQLUserRepository implements UserRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 

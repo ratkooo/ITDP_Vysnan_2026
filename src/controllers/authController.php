@@ -1,10 +1,10 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\Repositories\userRepositoryInterface;
+use App\Repositories\UserRepositoryInterface;
 
-class authController
+class AuthController
 {
     public function __construct(private readonly userRepositoryInterface $userRepository)
     {
@@ -119,6 +119,4 @@ class authController
             exit;
         }
     }
-
-
 }

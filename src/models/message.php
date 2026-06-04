@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Models;
 
-class Message {
+class Message
+{
     public ?int $id;
     public int $userId;
     public int $senderId;
@@ -9,7 +11,14 @@ class Message {
     public string $messageText;
     public ?string $createdAt;
 
-    public function __construct(?int $id, int $userId, int $senderId, string $senderUsername, string $messageText, ?string $createdAt = null) {
+    public function __construct(
+        ?int $id,
+        int $userId,
+        int $senderId,
+        string $senderUsername,
+        string $messageText,
+        ?string $createdAt = null
+    ) {
         $this->id = $id;
         $this->userId = $userId;
         $this->senderId = $senderId;

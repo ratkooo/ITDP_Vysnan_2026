@@ -5,10 +5,12 @@ namespace App\Controllers;
 use PDO;
 use PDOException;
 
-class ProfileController {
+class ProfileController
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         $this->pdo = $pdo;
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -19,7 +21,8 @@ class ProfileController {
      * Endpoint: GET /api/profile-data
      * Publicly fetches the current bio and skills list
      */
-    public function getProfileData() {
+    public function getProfileData()
+    {
         header('Content-Type: application/json');
         try {
             // Get Biography Text
@@ -44,7 +47,8 @@ class ProfileController {
     /**
      * Endpoint: POST /api/admin/update-bio
      */
-    public function updateBio() {
+    public function updateBio()
+    {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             http_response_code(403);
@@ -97,7 +101,8 @@ class ProfileController {
     /**
      * Endpoint: POST /api/admin/skills/update
      */
-    public function updateSkill() {
+    public function updateSkill()
+    {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             http_response_code(403);
@@ -127,7 +132,8 @@ class ProfileController {
     /**
      * Endpoint: POST /api/admin/skills/delete
      */
-    public function deleteSkill() {
+    public function deleteSkill()
+    {
         header('Content-Type: application/json');
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             http_response_code(403);

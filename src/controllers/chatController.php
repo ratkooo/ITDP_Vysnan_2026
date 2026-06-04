@@ -5,10 +5,12 @@ namespace App\Controllers; // <-- THIS MUST BE HERE
 use PDO;          // Ensures PDO works inside the namespace
 use PDOException; // Ensures error handling catches correctly
 
-class ChatController {
+class ChatController
+{
     private $pdo;
 
-    public function __construct($pdo) {
+    public function __construct($pdo)
+    {
         // Receives the database connection context
         $this->pdo = $pdo;
         if (session_status() === PHP_SESSION_NONE) {
@@ -20,7 +22,8 @@ class ChatController {
      * Route Destination: GET /chat
      * Prepares parameters and loads the chat room view interface
      */
-    public function index() {
+    public function index()
+    {
         // 1. Protection Gate: Redirect unauthorized clients to login
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
@@ -38,7 +41,8 @@ class ChatController {
      * Endpoint: GET /api/chat-threads
      * Fetches all non-admin users to populate the admin's sidebar thread list with notification metrics
      */
-    public function getThreads() {
+    public function getThreads()
+    {
         header('Content-Type: application/json');
 
         // Security Guard: Stop non-admins from scraping the account directory
@@ -74,7 +78,8 @@ class ChatController {
      * Endpoint: GET /api/chat-messages
      * Fetches message history for a chosen thread
      */
-    public function getMessages() {
+    public function getMessages()
+    {
         header('Content-Type: application/json');
 
         if (!isset($_SESSION['user_id'])) {
@@ -109,7 +114,8 @@ class ChatController {
      * Endpoint: POST /api/chat-send
      * Saves an incoming message
      */
-    public function sendMessage() {
+    public function sendMessage()
+    {
         header('Content-Type: application/json');
 
         if (!isset($_SESSION['user_id'])) {
