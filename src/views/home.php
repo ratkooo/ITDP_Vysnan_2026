@@ -1,4 +1,25 @@
 <?php
+
+/**
+ * ITDP Criteria: Functional User Stories (Section 3.1)
+ * - Portfolio biography management: Admins can edit/update professional bio
+ * - Skills management system: Admins can create/edit/delete professional skills
+ * - Dashboard tracking: Displays study programme progress and academic roadmap
+ * 
+ * ITDP Criteria: Usability (Nielsen Heuristics)
+ * - Heuristic 1: Visibility of System Status (showing current bio/skills)
+ * - Heuristic 5: Error Prevention (input validation on form fields)
+ * - Heuristic 9: Help Users Recognize/Diagnose/Recover (error messages and edit forms)
+ * 
+ * ITDP Criteria: Client-Side APIs (Section 3.6)
+ * - Skills management uses POST endpoints for CRUD operations on professional skills
+ * 
+ * ITDP Criteria: Security
+ * - Role-based access control: Only admins can modify bio/skills
+ * - Prepared statements prevent SQL injection
+ * - Output escaping with htmlspecialchars() prevents XSS attacks
+ */
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -18,12 +39,8 @@ if (!isset($pdo)) {
 
 $errorMessage = "";
 
-// ==========================================
-// DIRECT ADMIN LIFECYCLE FORM MUTATORS
-// ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
     if (isset($_POST['action'])) {
-        // 1. Update Biography Text File Entry
         if ($_POST['action'] === 'update_bio' && isset($_POST['bio'])) {
             try {
                 $stmt = $pdo->prepare("UPDATE profile_settings SET bio = :bio WHERE id = 1");

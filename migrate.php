@@ -2,50 +2,49 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-// Exact baseline infrastructure parameters matching your active container mesh
+/**
+ * ITDP Criteria: DevOps (Section 3.5.1 - Containers: Local Environment)
+ * Database migration runner for schema initialization and seeding.
+ * Executes SQL migrations from /migrations/ directory in deployment order.
+ * Supports --refresh flag to reset database state during development.
+ */
+
 $host = 'db_server';
 $db   = 'portfolio_db';
 $user = 'portfolio_user';
 $pass = 'portfolio_password';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false
-    ]);
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]);
 
-    echo "\033[36m🚀 Starting Database Migration Runner Engine...\033[0m\n";
+        echo "\033[36m🚀 Starting Database Migration Runner Engine...\033[0m\n";
 
-    // --- HANDLE DATABASE REFRESH FLAG ---
-    if (isset($argv) && in_array('--refresh', $argv)) {
-        echo "\033[33m🔄 Refresh flag detected. Resetting database environment state...\033[0m\n";
+        if (isset($argv) && in_array('--refresh', $argv)) {
+            echo "\033[33m🔄 Refresh flag detected. Resetting database environment state...\033[0m\n";
 
-        // Disable foreign key checks to prevent drop order restriction errors
-        $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-        // Fetch all existing tables dynamically
-        $tablesStmt = $pdo->query("SHOW TABLES");
-        $tables = $tablesStmt->fetchAll(PDO::FETCH_COLUMN);
+            $tablesStmt = $pdo->query("SHOW TABLES");
+            $tables = $tablesStmt->fetchAll(PDO::FETCH_COLUMN);
 
-        foreach ($tables as $table) {
-            $pdo->exec("DROP TABLE IF EXISTS `$table`");
-            echo "🗑️ Dropped table: \033[31m$table\033[0m\n";
+            foreach ($tables as $table) {
+                $pdo->exec("DROP TABLE IF EXISTS `$table`");
+                echo "🗑️ Dropped table: \033[31m$table\033[0m\n";
+            }
+
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+            echo "\033[32m✨ Database cleared successfully. Executing clean installation.\033[0m\n\n";
         }
 
-        // Re-enable foreign key constraints
-        $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
-        echo "\033[32m✨ Database cleared successfully. Executing clean installation.\033[0m\n\n";
-    }
-
-    // 1. Ensure the system inventory tracking log exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        migration_name VARCHAR(255) NOT NULL UNIQUE,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
-
-    // 2. Scan the dedicated migrations sub-folder for SQL modules
+        $pdo->exec("CREATE TABLE IF NOT EXISTS migrations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            migration_name VARCHAR(255) NOT NULL UNIQUE,
+            executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
     $migrationsDir = __DIR__ . '/migrations';
     if (!is_dir($migrationsDir)) {
         throw new Exception("Target migration path directory does not exist: $migrationsDir");

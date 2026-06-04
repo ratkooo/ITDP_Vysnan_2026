@@ -5,6 +5,11 @@ namespace App\Repositories;
 use App\Models\User;
 use PDO;
 
+/**
+ * ITDP Criteria: Security (OWASP A05:2025 - Injection Prevention)
+ * Data access layer implementing prepared statements to prevent SQL injection attacks.
+ * Part of the repository pattern for clean architecture separation of concerns.
+ */
 class MySQLUserRepository implements UserRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo)
@@ -13,7 +18,6 @@ class MySQLUserRepository implements UserRepositoryInterface
 
     public function findByUsername(string $username): ?User
     {
-        // OWASP Protection: Using prepared statements to block SQL Injections completely
         $stmt = $this->pdo->prepare("SELECT id, username, email, password, role FROM users WHERE username = :username LIMIT 1");
         $stmt->execute(['username' => $username]);
 
@@ -33,7 +37,6 @@ class MySQLUserRepository implements UserRepositoryInterface
 
     public function findByEmail(string $email): ?User
     {
-        // OWASP Protection: Using prepared statements to block SQL Injections completely
         $stmt = $this->pdo->prepare("SELECT id, username, email, password, role FROM users WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
 

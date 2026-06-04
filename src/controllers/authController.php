@@ -9,14 +9,19 @@ class AuthController
     public function __construct(private readonly userRepositoryInterface $userRepository)
     {
         if (session_status() === PHP_SESSION_NONE) {
-            // OWASP Security: Ensuring session configuration matches security baselines
             session_start([
-                'cookie_httponly' => true, // Blocks XSS from reading session tokens
-                'cookie_secure' => false,  // Set to true in your production remote HTTPS build!
+                'cookie_httponly' => true,
+                'cookie_secure' => false,
                 'use_strict_mode' => true,
             ]);
         }
     }
+    
+    /**
+     * ITDP Criteria: Security (OWASP A07:2025 - Authentication Failures)
+     * Functional User Story: User registration and login for portfolio access.
+     * Implements session-based authentication with password hashing (BCRYPT).
+     */"
 
     public function showLogin(?string $error = null): void
     {
@@ -27,9 +32,7 @@ class AuthController
     {
         $user = $this->userRepository->findByUsername($username);
 
-        // Security timing-attack and leak protection: Always use native password_verify
         if ($user && password_verify($password, $user->passwordHash)) {
-            // Regenerate session ID to completely prevent Session Fixation attacks
             session_regenerate_id(true);
 
             $_SESSION['user_id'] = $user->id;
@@ -97,7 +100,6 @@ class AuthController
             return;
         }
 
-        //OWASP A07:2025 Mitigation - Secure Password Hashing
         $passwordHash = password_hash($password, PASSWORD_BCRYPT);
 
         $success = $this->userRepository->insert($username, $email, $passwordHash, 'user');
@@ -115,7 +117,6 @@ class AuthController
             session_start();
         }
 
-        // Drop session footprint immediately if roles or parameters don't line up
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== $targetRole) {
             header('HTTP/1.1 403 Forbidden');
             echo "<h2 style='color:#dc2626; font-family:sans-serif; text-align:center; margin-top:4rem;'>
@@ -124,4 +125,9 @@ class AuthController
             exit;
         }
     }
+    
+    /**
+     * ITDP Criteria: Security (OWASP A01:2025 - Broken Access Control)
+     * Ensures only authorized users can access restricted features.
+     */"
 }
