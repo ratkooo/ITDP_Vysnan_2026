@@ -1,3 +1,105 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+
+if (!isset($pdo)) {
+    try {
+        $pdo = new PDO("mysql:host=db_server;dbname=portfolio_db;charset=utf8mb4", "portfolio_user", "portfolio_password", [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]);
+    } catch (Exception $e) {
+        die("System ledger registry connection failed.");
+    }
+}
+
+$errorMessage = "";
+
+// ==========================================
+// DIRECT ADMIN LIFECYCLE FORM MUTATORS
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
+    if (isset($_POST['action'])) {
+
+        // 1. Update Biography Text File Entry
+        if ($_POST['action'] === 'update_bio' && isset($_POST['bio'])) {
+            try {
+                $stmt = $pdo->prepare("UPDATE profile_settings SET bio = :bio WHERE id = 1");
+                $stmt->execute(['bio' => $_POST['bio']]);
+                header("Location: /");
+                exit;
+            } catch (Exception $e) {
+                $errorMessage = "Failed to update target persistent bio tracks.";
+            }
+        }
+
+        // 2. Create New Engineering Credential Record Token
+        if ($_POST['action'] === 'create_skill' && isset($_POST['skill_name'])) {
+            $skillName = trim($_POST['skill_name']);
+            if (!empty($skillName)) {
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO skills (skill_name) VALUES (:skill_name)");
+                    $stmt->execute(['skill_name' => $skillName]);
+                    header("Location: /");
+                    exit;
+                } catch (Exception $e) {
+                    $errorMessage = "Failed to persist new credential entry module.";
+                }
+            } else {
+                $errorMessage = "Skill identity naming parameter can't be blank.";
+            }
+        }
+
+        // 3. Update Existing Technical Competency Token
+        if ($_POST['action'] === 'update_skill' && isset($_POST['id'], $_POST['skill_name'])) {
+            $skillName = trim($_POST['skill_name']);
+            if (!empty($skillName)) {
+                try {
+                    $stmt = $pdo->prepare("UPDATE skills SET skill_name = :skill_name WHERE id = :id");
+                    $stmt->execute([
+                            'skill_name' => $skillName,
+                            'id' => $_POST['id']
+                    ]);
+                    header("Location: /");
+                    exit;
+                } catch (Exception $e) {
+                    $errorMessage = "Failed to apply modifications to target record details.";
+                }
+            }
+        }
+
+        // 4. Purge/Delete Selected Professional Skill Registry Link
+        if ($_POST['action'] === 'delete_skill' && isset($_POST['id'])) {
+            try {
+                $stmt = $pdo->prepare("DELETE FROM skills WHERE id = :id");
+                $stmt->execute(['id' => $_POST['id']]);
+                header("Location: /");
+                exit;
+            } catch (Exception $e) {
+                $errorMessage = "Failed to purge administrative skill entity log.";
+            }
+        }
+    }
+}
+
+// Fetch synchronous content records for standard execution render loops
+try {
+    // Dynamic Bio lookup
+    $bioStmt = $pdo->query("SELECT bio FROM profile_settings WHERE id = 1 LIMIT 1");
+    $profileData = $bioStmt->fetch();
+    $currentBio = $profileData ? $profileData['bio'] : '';
+
+    // Dynamic Skills catalog collection array mapping
+    $skillsStmt = $pdo->query("SELECT id, skill_name FROM skills ORDER BY id ASC");
+    $skillsList = $skillsStmt->fetchAll();
+} catch (Exception $e) {
+    $currentBio = "Loading bio footprint details...";
+    $skillsList = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,38 +119,99 @@
 
 <div class="container">
     <main>
+        <?php if (!empty($errorMessage)): ?>
+            <p class="text-error" style="margin-bottom: 1rem;"><?= htmlspecialchars($errorMessage); ?></p>
+        <?php endif; ?>
+
         <section id="biography">
-            <h2>About Me</h2>
-            <p>I am an ICT student, specializing in data science, back-end development and DevOps.</p>
-            <p>I'm currently a 3rd year bachelor student at HZ University of Applied Sciences. At the moment, I'm doing my Study Abroad Minor at the Frankfurt University of Applied Sciences in Germany.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2>About Me</h2>
+                <?php if ($isAdmin && !isset($_GET['edit_bio'])): ?>
+                    <a href="/?edit_bio=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; text-decoration: none;">✏️ Edit Bio</a>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($isAdmin && isset($_GET['edit_bio'])): ?>
+                <form method="POST" action="/" style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 6px;">
+                    <input type="hidden" name="action" value="update_bio">
+                    <label for="bio-textarea" style="display:block; font-weight:bold; margin-bottom:5px;">Update Biography Text:</label>
+                    <textarea id="bio-textarea" name="bio" rows="6" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; margin-bottom: 10px; resize: vertical;"><?= htmlspecialchars($currentBio); ?></textarea>
+                    <div>
+                        <button type="submit" class="btn" style="padding: 5px 15px; background-color: #22c55e;">Save Changes</button>
+                        <a href="/" class="btn" style="padding: 5px 15px; background-color: #64748b; text-decoration: none; margin-left: 5px;">Cancel</a>
+                    </div>
+                </form>
+            <?php else: ?>
+                <div id="bio-content">
+                    <?php
+                    if (!empty($currentBio)) {
+                        foreach (explode("\n\n", $currentBio) as $paragraph) {
+                            echo "<p>" . htmlspecialchars($paragraph) . "</p>";
+                        }
+                    } else {
+                        echo '<p class="text-muted">No profile biography registered yet.</p>';
+                    }
+                    ?>
+                </div>
+            <?php endif; ?>
         </section>
 
         <section id="api-showcase" class="skills-section">
-            <h2>My Skills</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2>My Skills</h2>
+                <?php if ($isAdmin && !isset($_GET['add_skill']) && !isset($_GET['edit_skill'])): ?>
+                    <a href="/?add_skill=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; background-color: #3b82f6; text-decoration: none;">➕ Add New Skill</a>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($isAdmin && isset($_GET['add_skill'])): ?>
+                <form method="POST" action="/" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; display: flex; gap: 8px; align-items: center;">
+                    <input type="hidden" name="action" value="create_skill">
+                    <input type="text" name="skill_name" placeholder="Enter professional skill label..." required style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
+                    <button type="submit" class="btn" style="background-color: #22c55e; padding: 6px 12px;">Add</button>
+                    <a href="/" class="btn" style="background-color: #64748b; padding: 6px 12px; text-decoration: none;">Cancel</a>
+                </form>
+            <?php endif; ?>
+
+            <?php if ($isAdmin && isset($_GET['edit_skill'], $_GET['skill_id'])): ?>
+                <form method="POST" action="/" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 6px; display: flex; gap: 8px; align-items: center;">
+                    <input type="hidden" name="action" value="update_skill">
+                    <input type="hidden" name="id" value="<?= htmlspecialchars($_GET['skill_id']); ?>">
+                    <input type="text" name="skill_name" value="<?= htmlspecialchars($_GET['current_name'] ?? ''); ?>" required style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
+                    <button type="submit" class="btn" style="background-color: #3b82f6; padding: 6px 12px;">Update</button>
+                    <a href="/" class="btn" style="background-color: #64748b; padding: 6px 12px; text-decoration: none;">Cancel</a>
+                </form>
+            <?php endif; ?>
+
             <p>A representation of core engineering domains, programming frameworks, and infrastructural design competencies.</p>
 
-            <div class="skills-grid">
-                <span class="skill-pill">PHP (OOP & MVC)</span>
-                <span class="skill-pill">JavaScript (ES6+)</span>
-                <span class="skill-pill">SQL (MySQL / PostgreSQL)</span>
-                <span class="skill-pill">HTML5</span>
+            <div class="skills-grid" id="skills-grid">
+                <?php if (empty($skillsList)): ?>
+                    <p style="color: #64748b; font-style: italic;">No skills registered.</p>
+                <?php else: ?>
+                    <?php foreach ($skillsList as $skill): ?>
+                        <span class="skill-pill" style="<?= $isAdmin ? 'display: inline-flex; align-items: center; gap: 8px;' : '' ?>">
+                            <span><?= htmlspecialchars($skill['skill_name']); ?></span>
+                            <?php if ($isAdmin): ?>
+                                <span style="display:inline-flex; gap: 4px; margin-left:4px; font-size:0.9em; border-left:1px solid rgba(255,255,255,0.2); padding-left:6px;">
+                                    <a href="/?edit_skill=1&skill_id=<?= $skill['id']; ?>&current_name=<?= urlencode($skill['skill_name']); ?>" title="Edit Skill" style="text-decoration:none;">✏️</a>
 
-                <span class="skill-pill">Docker Containerization</span>
-                <span class="skill-pill">Git & GitHub Actions CI/CD</span>
-                <span class="skill-pill">RESTful API Engineering</span>
-                <span class="skill-pill">Repository Design Pattern</span>
-
-                <span class="skill-pill">Linux Server Administration (Ubuntu/Debian)</span>
-                <span class="skill-pill">SSH Key Authentication & Hardening</span>
-                <span class="skill-pill">Firewall Configuration (UFW / Iptables)</span>
+                                    <form method="POST" action="/" style="display: inline; margin: 0; padding: 0;" onsubmit="return confirm('Confirm complete removal of this professional registration token?');">
+                                        <input type="hidden" name="action" value="delete_skill">
+                                        <input type="hidden" name="id" value="<?= $skill['id']; ?>">
+                                        <button type="submit" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; font-size: inherit;">❌</button>
+                                    </form>
+                                </span>
+                            <?php endif; ?>
+                        </span>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </section>
 
         <article id="academic-dashboard">
             <h2>Academic Progress Dashboard</h2>
-            <small>
-                Current progress in my Study Abroad Minor (SAM) courses
-            </small>
+            <small>Current progress in my Study Abroad Minor (SAM) courses</small>
 
             <table>
                 <thead>
@@ -61,9 +224,7 @@
                 </thead>
                 <tbody id="home-course-table-body">
                 <tr>
-                    <td colspan="4">
-                        Establishing dynamic endpoint pipeline...
-                    </td>
+                    <td colspan="4">Establishing dynamic endpoint pipeline...</td>
                 </tr>
                 </tbody>
             </table>
@@ -75,9 +236,7 @@
             <h2>Programme Tracking</h2>
             <p>Monitor my active higher academic roadmap progress and EC accumulations live.</p>
             <a href="/dashboard" class="btn">View Study Dashboard</a>
-
             <hr>
-
             <h2>Latest Insights</h2>
             <p>Explore ideas on programming architecture inside my publishing space.</p>
             <a href="/blog" class="btn">Read Blog Posts</a>
@@ -87,7 +246,9 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        // Execute dynamic API consumer request
+        // ==========================================
+        // PIPELINE: ACADEMIC PROGRESS GRID DATA
+        // ==========================================
         fetch('/api/student-courses')
             .then(response => {
                 if (!response.ok) throw new Error("API stream collection failure.");
@@ -95,31 +256,25 @@
             })
             .then(coursesArray => {
                 const tbody = document.getElementById('home-course-table-body');
-                tbody.innerHTML = ""; // Clear out the loading row
+                tbody.innerHTML = "";
 
                 if (coursesArray.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4">No academic milestones registered.</td></tr>`;
                     return;
                 }
 
-                // Append the courses row elements dynamically
                 coursesArray.forEach(item => {
                     const row = document.createElement('tr');
-
-                    // Maps system status flags strictly to stylesheet class tokens
-                    let stateBadge = '';
-                    if (item.status.toLowerCase() === 'passed') {
-                        stateBadge = `<span class="text-success">✔ PASSED</span>`;
-                    } else {
-                        stateBadge = `<span>⏳ IN PROGRESS</span>`;
-                    }
+                    let stateBadge = item.status.toLowerCase() === 'passed'
+                        ? `<span class="text-success">✔ PASSED</span>`
+                        : `<span>⏳ IN PROGRESS</span>`;
 
                     row.innerHTML = `
                         <td><strong>${escapeHtml(item.course_name)}</strong></td>
                         <td style="text-align: center; font-family: monospace;">${escapeHtml(item.ec_points)} EC</td>
                         <td style="text-align: center; font-weight: bold; font-family: monospace;">${escapeHtml(item.grade)}</td>
                         <td style="text-align: center;">${stateBadge}</td>
-`;
+                    `;
                     tbody.appendChild(row);
                 });
             })
@@ -130,22 +285,23 @@
             });
     });
 
-    // Cross-Site Scripting protection function
     function escapeHtml(str) {
         if (!str) return '';
-        return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        return str.toString()
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
+    // ==========================================
+    // PIPELINE: RECURSIVE CHAT ALERTS NOTIFICATIONS
+    // ==========================================
     (function() {
         const badge = document.getElementById('msgExclamationBadge');
         if (!badge) return;
 
-        const isAdmin = <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ? 'true' : 'false'; ?>;
-
-        // FIXED: Regex checks for /chat or /chat.php anywhere in path structures to prevent broken evaluation rules
+        const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
         const isChatPage = /\/chat(\.php)?\/?$/.test(window.location.pathname);
 
-        // Immediate Guard: Completely suppress the exclamation badge if standard user lands inside the chat page
         if (isChatPage && !isAdmin) {
             badge.style.display = 'none';
         }
@@ -165,16 +321,13 @@
                         const count = parseInt(thread.message_count || 0);
                         const lastSender = thread.last_sender;
 
-                        if (isChatPage && activeTargetUserId == uid) {
+                        if (isChatPage && typeof activeTargetUserId !== 'undefined' && activeTargetUserId == uid) {
                             seenThreads[uid] = count;
                         }
 
                         const lastSeenCount = seenThreads[uid] || 0;
                         if (count > lastSeenCount && lastSender !== 'admin') {
-                            // If currently looking at this active thread right now, don't flash an alert
-                            if (isChatPage && activeTargetUserId == uid) {
-                                // Keep reading
-                            } else {
+                            if (!(isChatPage && typeof activeTargetUserId !== 'undefined' && activeTargetUserId == uid)) {
                                 showBadge = true;
                             }
                         }
@@ -210,15 +363,6 @@
 
         checkGlobalMessages();
         setInterval(checkGlobalMessages, 3000);
-
-        if (isChatPage) {
-            const clearBadge = () => {
-                badge.style.display = 'none';
-                checkGlobalMessages();
-            };
-            window.addEventListener('focus', clearBadge);
-            document.addEventListener('click', clearBadge);
-        }
     })();
 </script>
 </body>

@@ -140,13 +140,9 @@ try {
 
     <aside>
         <sidebar>
-            <h2>Navigation Node</h2>
-            <p>Return to the main dashboard workspace portal at any time to verify real-time tracking metrics.</p>
-            <a href="/" class="btn" style="width: 100%;">Return to Home Overview</a>
-            <hr>
             <h2>Administrative Rights</h2>
             <?php if ($isAdmin): ?>
-                <p class="text-success">✔ Signed in with full platform creation authorities.</p>
+                <p class="text-success">✔ Signed in with admin privileges.</p>
             <?php else: ?>
                 <p>Sign in as an admin account to activate content creation features across this node matrix.</p>
             <?php endif; ?>

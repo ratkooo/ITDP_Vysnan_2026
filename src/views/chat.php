@@ -4,51 +4,6 @@
     <meta charset="UTF-8">
     <title>Support Chat</title>
     <link rel="stylesheet" href="/css/style.css">
-
-    <style>
-        /* Scoped structural helpers to handle dynamic rightsided alignment */
-        .chat-message-card.admin-align {
-            align-self: flex-end !important;
-            background-color: #e0f2fe !important; /* Soft sky-blue tint */
-            border-color: #bae6fd !important;
-        }
-
-        .chat-message-card.admin-align small {
-            color: #0369a1 !important; /* Contrasting admin label */
-            text-align: right;
-        }
-
-        /* Container element for displaying message timing metrics */
-        .chat-msg-time {
-            display: block;
-            font-size: 0.68rem;
-            color: #64748b;
-            text-align: right;
-            margin-top: 0.35rem;
-            font-weight: 500;
-        }
-
-        /* Flex layout adjustments for the thread item pills */
-        .thread-item-pill {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            cursor: pointer;
-        }
-
-        /* Notification badge styles for the sidebar list items */
-        .thread-badge {
-            background-color: #dc2626; /* Alert red tone */
-            color: #ffffff;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 9999px;
-            line-height: 1;
-            margin-left: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-        }
-    </style>
 </head>
 <body>
 
@@ -92,6 +47,9 @@
     const urlParams = new URLSearchParams(window.location.search);
     const activeTargetUserId = urlParams.get('user_id') || '';
 
+    // Track initial page load so it automatically scrolls down the first time
+    let isFirstLoad = true;
+
     /**
      * Converts raw SQL datetime strings down into a localized clean short time
      */
@@ -107,13 +65,30 @@
     }
 
     /**
+     * Converts raw SQL datetime components down into a friendly long-form reader date
+     */
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    /**
      * Poll and render message items matching system design patterns
      */
-    async function loadMessages() {
+    async function loadMessages(forceScrollDown = false) {
         try {
             const endpoint = activeTargetUserId ? `/api/chat-messages?user_id=${activeTargetUserId}` : '/api/chat-messages';
             const response = await fetch(endpoint);
             const messages = await response.json();
+
+            // Measure if user is close to the bottom BEFORE resetting innerHTML
+            const scrollBuffer = 50;
+            const isUserAtBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) <= scrollBuffer;
 
             chatMessages.innerHTML = '';
 
@@ -122,7 +97,23 @@
                 return;
             }
 
+            // Registry context tracking changes between separate loop occurrences
+            let lastDateStr = null;
+
             messages.forEach(msg => {
+                // Extrapolate raw SQL Date context entry segment (YYYY-MM-DD)
+                const currentDateStr = msg.created_at ? msg.created_at.split(' ')[0] : '';
+
+                // When date switches, inject a decorative dividing line element node
+                if (currentDateStr && currentDateStr !== lastDateStr) {
+                    const separatorElement = document.createElement('div');
+                    separatorElement.className = 'chat-date-separator';
+                    separatorElement.innerHTML = `<span>${formatDate(currentDateStr)}</span>`;
+                    chatMessages.appendChild(separatorElement);
+
+                    lastDateStr = currentDateStr;
+                }
+
                 const isMsgFromAdmin = (msg.sender_username === 'admin');
 
                 // Keep standard left-aligned look unless the user writing is the admin
@@ -140,8 +131,11 @@
                 chatMessages.appendChild(msgElement);
             });
 
-            // Keep view sticky at bottom boundaries to monitor fresh records
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Only snap down if they were already at the bottom, page just loaded, or they sent a message
+            if (isUserAtBottom || isFirstLoad || forceScrollDown) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                isFirstLoad = false;
+            }
 
         } catch (error) {
             console.error("Failed to map dynamic tracking entries:", error);
@@ -170,7 +164,7 @@
 
             if (result.success) {
                 messageInput.value = '';
-                loadMessages(); // Instantly update view tracking layouts
+                await loadMessages(true); // Force push scroll position downward to view new trace entry
             } else {
                 alert("Error sending message: " + (result.error || "Unknown response context"));
             }
@@ -186,9 +180,10 @@
     sendBtn.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // Instantly load data tracks and begin long poll loop intervals
-    loadMessages();
-    setInterval(loadMessages, 2000);
+    // Initial load forces down
+    loadMessages(true);
+    // Background polling loop does not force down unless user is already scrolled to bottom
+    setInterval(() => loadMessages(false), 2000);
 
     /**
      * Parses thread message statistics to inject sidebar real-time alert markers

@@ -11,14 +11,13 @@
 <?php require_once __DIR__ . '/navbar.php'; ?>
 
 <header>
-    <h1>Study Programme Progress Dashboard</h1>
-    <p>Live higher education milestones tracking data (Administrative Execution Mode)</p>
+    <h1>Admin Dashboard</h1>
 </header>
 
 <div class="container">
     <main>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h2>Completed Course Roadmap</h2>
+            <h2>Course list</h2>
             <button class="btn" onclick="openNewCourseForm()">+ Add New Module</button>
         </div>
 
@@ -82,11 +81,10 @@
     <aside>
         <sidebar>
             <h2>Credit Summary</h2>
-            <p>Total academic tracking metrics:</p>
+            <p>Total EC:</p>
             <h3 style="font-size: 2.2rem; color: var(--success); margin: 0.5rem 0;">
                 <span id="metrics-ec-sum"><?= $totalPassedEC; ?></span> / 60 EC
             </h3>
-            <p>Calculated using strict schema constraints for rows labeled as <b class="text-success">Passed</b>.</p>
         </sidebar>
     </aside>
 </div>

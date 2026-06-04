@@ -99,6 +99,18 @@ nav a:hover {
     box-shadow: 0 0 0 2px #0f172a; /* Outer boundary border matching slate header background profiles */
 }
 
+.nav-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem; /* Adjusts the space between icon, username, and logout button */
+}
+
+.nav-icon-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center;
+}
+
 /* -------------------------------------------------------------------------
    3. STRUCTURAL CONTENT GRID LAYOUT
    ------------------------------------------------------------------------- */
@@ -590,4 +602,143 @@ input.invalid-field {
     padding: 0.65rem 1.75rem;
     font-weight: 500;
     cursor: pointer;
+}
+
+/* Scoped structural helpers to handle dynamic rightsided alignment */
+.chat-message-card.admin-align {
+    align-self: flex-end !important;
+    background-color: #e0f2fe !important; /* Soft sky-blue tint */
+    border-color: #bae6fd !important;
+}
+
+.chat-message-card.admin-align small {
+    color: #0369a1 !important; /* Contrasting admin label */
+    text-align: right;
+}
+
+/* Container element for displaying message timing metrics */
+.chat-msg-time {
+    display: block;
+    font-size: 0.68rem;
+    color: #64748b;
+    text-align: right;
+    margin-top: 0.35rem;
+    font-weight: 500;
+}
+
+/* Flex layout adjustments for the thread item pills */
+.thread-item-pill {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    cursor: pointer;
+}
+
+/* Notification badge styles for the sidebar list items */
+.thread-badge {
+    background-color: #dc2626; /* Alert red tone */
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    line-height: 1;
+    margin-left: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.chat-date-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.25rem 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.chat-date-separator::before,
+.chat-date-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.chat-date-separator::before {
+    margin-right: 1rem;
+}
+
+.chat-date-separator::after {
+    margin-left: 1rem;
+}
+
+.chat-date-separator span {
+    background-color: #f8fafc;
+    padding: 3px 12px;
+    border-radius: 9999px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   Admin Management & Skills Component CSS
+   ========================================================================== */
+.profile-section {
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.admin-edit-box {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 6px;
+}
+
+.skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.skill-pill-item {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    color: #334155;
+    padding: 0.4rem 0.9rem;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+}
+
+.skill-pill-item.admin-pill {
+    padding-right: 0.25rem;
+}
+
+.skill-action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0 0.3rem;
+    display: inline-flex;
+    align-items: center;
+}
+.skill-edit-btn { color: #0284c7; }
+.skill-delete-btn { color: #dc2626; margin-left: 0.15rem; }
+
+.inline-form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    font-family: inherit;
 }

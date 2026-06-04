@@ -12,13 +12,12 @@
 
 <header>
     <h1>Account Profile</h1>
-    <p>View or modify your dynamic identity registry credentials</p>
 </header>
 
 <div class="container">
     <main>
         <h2>Edit Profile Information</h2>
-        <p>Modify your identity mapping properties parameters below. *Leave the password blank if you wish to keep your current password.*</p>
+        <p>Modify your account information.</p>
 
         <?php if (isset($_SESSION['profile_success'])): ?>
             <div class="alert success" style="color: #28a745; font-weight: bold; margin-bottom: 15px;">
@@ -46,7 +45,7 @@
             </div>
 
             <div>
-                <label for="password">New Password (Leave blank to preserve active value)</label>
+                <label for="password">New Password (Leave blank to keep old password)</label>
                 <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="new-password">
                 <span id="password-error" class="validation-message"></span>
             </div>

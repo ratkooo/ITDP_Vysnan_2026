@@ -3,10 +3,10 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\AuthController;
-use App\Controllers\ProjectApiController;
 use App\Repositories\MySQLUserRepository;
 use App\Controllers\ChatController;
 use App\Repositories\MySQLMessageRepository;
+use App\Controllers\ProfileController;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
@@ -45,6 +45,7 @@ $userRepository = new MySQLUserRepository($pdo);
 $authController = new AuthController($userRepository);
 $messageRepository = new MySQLMessageRepository($pdo);
 $chatController = new ChatController($pdo);
+$profileController = new ProfileController($pdo);
 
 // =========================================================================
 // 3. REQUEST PARSING & CLEAN URL EXTRACTION
@@ -186,13 +187,6 @@ switch ($requestUri) {
         header('Location: /');
         exit;
 
-    // Catch-All Exception Handling Page
-    default:
-        http_response_code(404);
-        echo "<h1>404 Not Found</h1>";
-        echo "<p>The requested route configuration structure does not exist on this application server.</p>";
-        break;
-
     case '/dashboard':
         // Enforce strict protection checking right at the gateway line
         \App\Controllers\AuthController::requireRole('admin');
@@ -256,6 +250,7 @@ switch ($requestUri) {
 
         echo json_encode(['success' => $success]);
         exit;
+
     // RESTful JSON API Endpoint: Dynamic Account Availability Engine
     case '/api/check-availability':
         header('Content-Type: application/json');
@@ -402,6 +397,7 @@ switch ($requestUri) {
     case '/chat':
         $chatController->index();
         break;
+
     case '/api/chat-threads':
         $chatController->getThreads();
         break;
@@ -414,5 +410,35 @@ switch ($requestUri) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $chatController->sendMessage();
         }
+        break;
+
+    // ==========================================
+    // ABOUT ME & SKILLS MANAGEMENT API WORKFLOW
+    // ==========================================
+    case '/api/profile-data':
+        $profileController->getProfileData();
+        break;
+
+    case '/api/admin/update-bio':
+        $profileController->updateBio();
+        break;
+
+    case '/api/admin/skills/create':
+        $profileController->createSkill();
+        break;
+
+    case '/api/admin/skills/update':
+        $profileController->updateSkill();
+        break;
+
+    case '/api/admin/skills/delete':
+        $profileController->deleteSkill();
+        break;
+
+    // Catch-All Exception Handling Page
+    default:
+        http_response_code(404);
+        echo "<h1>404 Not Found</h1>";
+        echo "<p>The requested route configuration structure does not exist on this application server.</p>";
         break;
 }
