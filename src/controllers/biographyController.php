@@ -5,7 +5,7 @@ namespace App\Controllers;
 use PDO;
 use PDOException;
 
-class ProfileController
+class BiographyController
 {
     private PDO $pdo;
 
@@ -20,7 +20,7 @@ class ProfileController
     /**
      * Endpoint: GET /api/profile-data
      */
-    public function getProfileData(): void
+    public function getBiographyData(): void
     {
         header('Content-Type: application/json');
         try {

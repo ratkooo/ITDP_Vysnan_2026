@@ -3,55 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Retain session structural context checks for rendering UI shells
 $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-
-if (!isset($pdo)) {
-    try {
-        $pdo = new PDO("mysql:host=localhost;dbname=portfolio_db;charset=utf8mb4", "root", "", [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]);
-    } catch (Exception $e) {
-        die("System ledger registry connection failed.");
-    }
-}
-
-$errorMessage = "";
-
-// Handle Admin Lifecycle Mutator: Creating a new article
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
-    if (isset($_POST['action']) && $_POST['action'] === 'create') {
-        $title = trim($_POST['title'] ?? '');
-        $summary = trim($_POST['summary'] ?? '');
-        $content = trim($_POST['content'] ?? '');
-
-        if (empty($title) || empty($summary) || empty($content)) {
-            $errorMessage = "All data management form input metrics are mandatory.";
-        } else {
-            try {
-                $stmt = $pdo->prepare("INSERT INTO blog_posts (title, summary, content) VALUES (:title, :summary, :content)");
-                $stmt->execute([
-                        'title' => $title,
-                        'summary' => $summary,
-                        'content' => $content
-                ]);
-                header("Location: /blog");
-                exit;
-            } catch (Exception $e) {
-                $errorMessage = "Failed to persist new blog article instance.";
-            }
-        }
-    }
-}
-
-// Fetch archive loop dataset
-try {
-    $stmt = $pdo->query("SELECT id, title, summary, author, created_at FROM blog_posts ORDER BY id DESC");
-    $posts = $stmt->fetchAll();
-} catch (Exception $e) {
-    $posts = [];
-    $errorMessage = "Unable to process dynamic content loop metrics query.";
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,38 +19,34 @@ try {
 <?php require_once __DIR__ . '/../navbar.php'; ?>
 
 <header>
-    <h1>The Engineering Publishing Space</h1>
-    <p>Architectural Thoughts, Case Studies, and Academic Logs</p>
+    <h1>Radovan's blog posts</h1>
+    <p>Academic insights and technical perspectives</p>
 </header>
 
 <div class="container">
     <main>
         <h2>Latest Publications</h2>
-        <p style="color: #64748b; margin-bottom: 1.5rem;">Explore short excerpts of architectural case studies and design logs.</p>
+        <p style="color: #64748b; margin-bottom: 1.5rem;">Explore past blog posts posted by me.</p>
 
-        <?php if (!empty($errorMessage)) : ?>
-            <p class="text-error" style="margin-bottom: 1rem;"><?= htmlspecialchars($errorMessage); ?></p>
-        <?php endif; ?>
+        <div id="message-container"></div>
 
         <?php if ($isAdmin) : ?>
             <?php if (isset($_GET['new']) && $_GET['new'] == '1') : ?>
                 <article>
-                    <h3>Compose New Platform Publication</h3>
-                    <form method="POST" action="/blog">
-                        <input type="hidden" name="action" value="create">
-
+                    <h3>New Blog Article</h3>
+                    <form id="create-post-form">
                         <div>
-                            <label for="new-title">Article Title String</label>
+                            <label for="new-title">Title</label>
                             <input type="text" id="new-title" name="title" required>
                         </div>
 
                         <div>
-                            <label for="new-summary">Brief Excerpt Summary Paragraph</label>
+                            <label for="new-summary">Summary</label>
                             <input type="text" id="new-summary" name="summary" required>
                         </div>
 
                         <div>
-                            <label for="new-content">Core Mark Content Markdown</label>
+                            <label for="new-content">Description</label>
                             <textarea id="new-content" name="content" required></textarea>
                         </div>
 
@@ -114,28 +63,9 @@ try {
             <?php endif; ?>
         <?php endif; ?>
 
-        <?php if (empty($posts)) : ?>
-            <article>
-                <h3>No Publications Found</h3>
-                <small>Archive Empty</small>
-                <p>Check back later for newly recorded field insights.</p>
-            </article>
-        <?php else : ?>
-            <?php foreach ($posts as $post) : ?>
-                <article>
-                    <h3><?= htmlspecialchars($post['title']); ?></h3>
-                    <small>
-                        Published on <?= date('F j, Y', strtotime($post['created_at'])); ?> by <?= htmlspecialchars($post['author'] ?? 'Admin'); ?>
-                    </small>
-                    <p style="color: var(--text); margin-bottom: 1.25rem;">
-                        <?= htmlspecialchars($post['summary']); ?>
-                    </p>
-                    <div>
-                        <a href="/blogpost?id=<?= $post['id']; ?>" class="btn" style="background-color: #2563eb;">Read Entire Article →</a>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        <?php endif; ?>
+        <div id="blog-posts-container">
+            <p style="color: #64748b;">Loading dynamic publication records...</p>
+        </div>
     </main>
 
     <aside>
@@ -149,5 +79,92 @@ try {
         </sidebar>
     </aside>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const postsContainer = document.getElementById('blog-posts-container');
+    const messageContainer = document.getElementById('message-container');
+    const createForm = document.getElementById('create-post-form');
+
+    // 1. Fetch Archive Dataset Loop
+    if (postsContainer) {
+        fetch('/api/blog/posts')
+            .then(response => {
+                if (!response.ok) throw new Error("Infrastructure collection error.");
+                return response.json();
+            })
+            .then(posts => {
+                postsContainer.innerHTML = ''; // Reset container visibility
+
+                if (!posts || posts.length === 0) {
+                    postsContainer.innerHTML = `
+                        <article>
+                            <h3>No Publications Found</h3>
+                            <small>Archive Empty</small>
+                            <p>Check back later for newly recorded field insights.</p>
+                        </article>
+                    `;
+                    return;
+                }
+
+                // Append matching elements into current DOM workspace template loops
+                posts.forEach(post => {
+                    const article = document.createElement('article');
+                    // Format system date cleanly for users
+                    const pubDate = new Date(post.created_at).toLocaleDateString('en-US', {
+                        month: 'long', day: 'numeric', year: 'numeric'
+                    });
+
+                    article.innerHTML = `
+                        <h3>${escapeHtml(post.title)}</h3>
+                        <small>Published on ${pubDate} by ${escapeHtml(post.author || 'Admin')}</small>
+                        <p style="color: var(--text); margin-bottom: 1.25rem;">${escapeHtml(post.summary)}</p>
+                        <div>
+                            <a href="/blogpost?id=${post.id}" class="btn" style="background-color: #2563eb;">Read Entire Article →</a>
+                        </div>
+                    `;
+                    postsContainer.appendChild(article);
+                });
+            })
+            .catch(error => {
+                postsContainer.innerHTML = `<p class="text-error">Unable to process dynamic content loop metrics query.</p>`;
+            });
+    }
+
+    // 2. Intercept and handle Create execution loops via AJAX POST
+    if (createForm) {
+        createForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('new-title').value);
+            formData.append('summary', document.getElementById('new-summary').value);
+            formData.append('content', document.getElementById('new-content').value);
+
+            fetch('/api/blog/save', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/blog'; // Force routing redirection state reset
+                    } else {
+                        messageContainer.innerHTML = `<p class="text-error" style="margin-bottom: 1rem;">${escapeHtml(data.error || 'Failed to persist new blog article instance.')}</p>`;
+                    }
+                })
+                .catch(err => {
+                    messageContainer.innerHTML = `<p class="text-error" style="margin-bottom: 1rem;">Network error encountered while handling transaction logs.</p>`;
+                });
+        });
+    }
+});
+
+// Helper function to mitigate XSS vulnerabilities within structural dynamic scripts
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+</script>
 </body>
 </html>

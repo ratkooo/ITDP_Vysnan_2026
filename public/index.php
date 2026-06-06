@@ -6,7 +6,7 @@ use App\Controllers\AuthController;
 use App\Repositories\MySQLUserRepository;
 use App\Controllers\ChatController;
 use App\Repositories\MySQLMessageRepository;
-use App\Controllers\ProfileController;
+use App\Controllers\BiographyController;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start([
@@ -45,7 +45,7 @@ $userRepository = new MySQLUserRepository($pdo);
 $authController = new AuthController($userRepository);
 $messageRepository = new MySQLMessageRepository($pdo);
 $chatController = new ChatController($pdo);
-$profileController = new ProfileController($pdo);
+$biographyController = new BiographyController($pdo);
 
 // =========================================================================
 // 3. REQUEST PARSING & CLEAN URL EXTRACTION
@@ -72,7 +72,83 @@ switch ($requestUri) {
         require __DIR__ . '/../src/Views/blog/blog.php';
         break;
 
-    // User Session Authentication Entrypoint
+    case '/api/blog/posts':
+        header('Content-Type: application/json');
+        try {
+            $stmt = $pdo->query("SELECT id, title, summary, author, created_at FROM blog_posts ORDER BY id DESC");
+            $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($posts);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(["error" => "Failed to retrieve publications."]);
+        }
+        exit;
+
+    case '/api/blog/post-detail':
+        header('Content-Type: application/json');
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        
+        try {
+            $stmt = $pdo->prepare("SELECT id, title, summary, content, author, created_at FROM blog_posts WHERE id = ? LIMIT 1");
+            $stmt->execute([$id]);
+            $post = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($post) {
+                echo json_encode($post);
+            } else {
+                http_response_code(404);
+                echo json_encode(["error" => "Publication context not located."]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(["error" => "Database processing error."]);
+        }
+        exit;
+
+    case '/api/blog/save':
+        \App\Controllers\AuthController::requireRole('admin');
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Method Rejection']);
+            exit;
+        }
+
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : null;
+        $title = trim($_POST['title'] ?? '');
+        $summary = trim($_POST['summary'] ?? '');
+        $content = trim($_POST['content'] ?? '');
+
+        if (empty($title) || empty($summary) || empty($content)) {
+            echo json_encode(['success' => false, 'error' => 'All layout parameters mandatory.']);
+            exit;
+        }
+
+        if ($id) {
+            // Update (U)
+            $stmt = $pdo->prepare("UPDATE blog_posts SET title = ?, summary = ?, content = ? WHERE id = ?");
+            $success = $stmt->execute([$title, $summary, $content, $id]);
+        } else {
+            // Create (C)
+            $stmt = $pdo->prepare("INSERT INTO blog_posts (title, summary, content) VALUES (?, ?, ?)");
+            $success = $stmt->execute([$title, $summary, $content]);
+        }
+
+        echo json_encode(['success' => $success]);
+        exit;
+
+    case '/api/blog/delete':
+        \App\Controllers\AuthController::requireRole('admin');
+        header('Content-Type: application/json');
+
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+        $stmt = $pdo->prepare("DELETE FROM blog_posts WHERE id = ?");
+        $success = $stmt->execute([$id]);
+
+        echo json_encode(['success' => $success]);
+        exit;
+    
     case '/register':
         if ($requestMethod === 'GET') {
             require_once __DIR__ . '/../src/Views/register.php';
@@ -85,7 +161,6 @@ switch ($requestUri) {
             $password = $_POST['password'] ?? '';
             $confirm  = $_POST['password_confirm'] ?? '';
 
-            // Server-side safety net validation check
             if (strlen($username) < 5 || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8 || $password !== $confirm) {
                 $_SESSION['error'] = "Registration failed: Structural input criteria not satisfied.";
                 header('Location: /register');
@@ -93,7 +168,6 @@ switch ($requestUri) {
             }
 
             try {
-                // Ensure duplicate credentials don't cause a database crash
                 $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
                 $stmt->execute([$username, $email]);
                 if ($stmt->fetch()) {
@@ -102,17 +176,12 @@ switch ($requestUri) {
                     exit;
                 }
 
-                // Encrypt password using secure BCRYPT algorithm
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-                // Insert user safely into the system database registry
                 $insert = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'user')");
                 $insert->execute([$username, $email, $hashedPassword]);
 
-                // --- SUCCESS SESSION BANNER FLAG SETTING ---
                 $_SESSION['registration_success'] = "Registration successful! You can now authenticate your session below.";
-
-                // Redirect user seamlessly to the login panel portal
                 header('Location: /login');
                 exit;
 
@@ -141,26 +210,20 @@ switch ($requestUri) {
             }
 
             try {
-                // Query system registry database mapping logs for matching account tracking entries
                 $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? LIMIT 1");
                 $stmt->execute([$username]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Authenticate matching cryptographic signature tracks
                 if ($user && password_verify($password, $user['password'])) {
-                    // Regenerate session tokens to insulate against hijacking exploits (OWASP A04)
                     session_regenerate_id(true);
 
-                    // Write explicit operational values into active session space
                     $_SESSION['user_id']  = $user['id'];
                     $_SESSION['username'] = $user['username'];
-                    $_SESSION['role']     = $user['role']; // 'student' or 'admin'
+                    $_SESSION['role']     = $user['role']; 
 
-                    // SUCCESS DIRECTIVE: Smooth user redirect to the main home landing timeline portal
                     header('Location: /');
                     exit;
                 } else {
-                    // Graceful feedback for failed authorization attempts (Heuristic 9)
                     $_SESSION['login_error'] = "Invalid verification matrix tokens. Please double check credentials.";
                     header('Location: /login');
                     exit;
@@ -173,7 +236,6 @@ switch ($requestUri) {
         }
         break;
 
-    // Destroy Authentication Token & Clear Session State
     case '/logout':
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
@@ -188,22 +250,8 @@ switch ($requestUri) {
         exit;
 
     case '/dashboard':
-        // Enforce strict protection checking right at the gateway line
+        // Decoupled Route Gateway Shell - Authorization Gated Only
         \App\Controllers\AuthController::requireRole('admin');
-
-        // Safeguard connection parameters against infrastructure dropping
-        if (!isset($pdo)) {
-            die("Database infrastructure configuration error. Global connection vector down.");
-        }
-
-        // Fetch dynamic roadmap blocks
-        $stmt = $pdo->query("SELECT * FROM courses ORDER BY id ASC");
-        $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Calculate dynamic total metric metrics
-        $passedStmt = $pdo->query("SELECT SUM(ec_points) FROM courses WHERE status = 'Passed'");
-        $totalPassedEC = (int)$passedStmt->fetchColumn();
-
         require_once __DIR__ . '/../src/Views/dashboard.php';
         break;
 
@@ -220,7 +268,7 @@ switch ($requestUri) {
         $course_name = trim($_POST['course_name'] ?? '');
         $ec_points = (int)($_POST['ec_points'] ?? 0);
         $grade = trim($_POST['grade'] ?? '-');
-        $status = trim($_POST['status'] ?? 'Active Run');
+        $status = trim($_POST['status'] ?? 'In Progress');
 
         if (empty($course_name)) {
             echo json_encode(['success' => false, 'error' => 'Invalid structural content parameters.']);
@@ -228,11 +276,9 @@ switch ($requestUri) {
         }
 
         if ($id) {
-            // Update existing entry statement track
             $stmt = $pdo->prepare("UPDATE courses SET course_name = ?, ec_points = ?, grade = ?, status = ? WHERE id = ?");
             $success = $stmt->execute([$course_name, $ec_points, $grade, $status, $id]);
         } else {
-            // Create a brand new record profile inside the cluster
             $stmt = $pdo->prepare("INSERT INTO courses (course_name, ec_points, grade, status) VALUES (?, ?, ?, ?)");
             $success = $stmt->execute([$course_name, $ec_points, $grade, $status]);
         }
@@ -244,25 +290,23 @@ switch ($requestUri) {
         \App\Controllers\AuthController::requireRole('admin');
         header('Content-Type: application/json');
 
-        $id = isset($_POST['id']) ? (int)$POST['id'] : 0;
+        $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         $stmt = $pdo->prepare("DELETE FROM courses WHERE id = ?");
         $success = $stmt->execute([$id]);
 
         echo json_encode(['success' => $success]);
         exit;
 
-    // RESTful JSON API Endpoint: Dynamic Account Availability Engine
     case '/api/check-availability':
         header('Content-Type: application/json');
 
         $username = trim($_GET['username'] ?? '');
         $email    = trim($_GET['email'] ?? '');
-        $currentUserId = $_SESSION['user_id'] ?? null; // Identify if a session exists
+        $currentUserId = $_SESSION['user_id'] ?? null;
 
         $usernameExists = false;
         $emailExists = false;
 
-        // Verify username uniqueness against other database records
         if (!empty($username)) {
             if ($currentUserId) {
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ? AND id != ?");
@@ -274,7 +318,6 @@ switch ($requestUri) {
             $usernameExists = $stmt->fetchColumn() > 0;
         }
 
-        // Verify email uniqueness against other database records
         if (!empty($email)) {
             if ($currentUserId) {
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ? AND id != ?");
@@ -293,14 +336,12 @@ switch ($requestUri) {
         exit;
 
     case '/profile':
-        // Auth gate protection layer check
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
             exit;
         }
 
         if ($requestMethod === 'GET') {
-            // Pull the latest up-to-date registry data metrics directly from the DB
             $stmt = $pdo->prepare("SELECT username, email FROM users WHERE id = ? LIMIT 1");
             $stmt->execute([$_SESSION['user_id']]);
             $userProfile = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -318,7 +359,6 @@ switch ($requestUri) {
             $email    = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
-            // Secure validation backup baseline check (Username minimal constraints = 5)
             if (strlen($username) < 5 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $_SESSION['profile_error'] = "Update rejected: Input criteria requirements structural failure.";
                 header('Location: /profile');
@@ -326,7 +366,6 @@ switch ($requestUri) {
             }
 
             try {
-                // Ensure the requested credentials aren't stolen or duplicated by another user (id != current user)
                 $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
                 $stmt->execute([$username, $email, $_SESSION['user_id']]);
                 if ($stmt->fetch()) {
@@ -335,7 +374,6 @@ switch ($requestUri) {
                     exit;
                 }
 
-                // If updating password along with text records
                 if (!empty($password)) {
                     if (strlen($password) < 8) {
                         $_SESSION['profile_error'] = "Password must be at least 8 characters long.";
@@ -346,12 +384,10 @@ switch ($requestUri) {
                     $update = $pdo->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
                     $update->execute([$username, $email, $hashedPassword, $_SESSION['user_id']]);
                 } else {
-                    // Update only text properties context boundaries
                     $update = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                     $update->execute([$username, $email, $_SESSION['user_id']]);
                 }
 
-                // Sync the active runtime memory session variables state immediately
                 $_SESSION['username'] = $username;
                 $_SESSION['profile_success'] = "Profile metrics saved and applied successfully!";
                 header('Location: /profile');
@@ -367,12 +403,10 @@ switch ($requestUri) {
 
     case '/api/student-courses':
         header('Content-Type: application/json');
-
         try {
-            // Pull tracking records directly from your database table
-            $stmt = $pdo->query("SELECT course_name, ec_points, grade, status FROM courses ORDER BY id ASC");
+            // Standardized to fetch database primary keys to match decoupling specifications
+            $stmt = $pdo->query("SELECT id, course_name, ec_points, grade, status FROM courses ORDER BY id ASC");
             $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             echo json_encode($courses);
         } catch (Exception $e) {
             http_response_code(500);
@@ -380,17 +414,10 @@ switch ($requestUri) {
         }
         exit;
 
-    // ==========================================
-    // ASSIGNMENT: RESTful API ENDPOINT 2
-    // Returns a dynamic structured array list
-    // ==========================================
     case '/api/recent-registrations':
         header('Content-Type: application/json');
-
-        // Fetch up to 5 recent users without exposing passwords
         $stmt = $pdo->query("SELECT username, role, created_at FROM users ORDER BY id DESC");
         $recentUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
         echo json_encode($recentUsers);
         exit;
 
@@ -412,30 +439,26 @@ switch ($requestUri) {
         }
         break;
 
-    // ==========================================
-    // ABOUT ME & SKILLS MANAGEMENT API WORKFLOW
-    // ==========================================
-    case '/api/profile-data':
-        $profileController->getProfileData();
+    case '/api/biography-data':
+        $biographyController->getBiographyData();
         break;
 
     case '/api/admin/update-bio':
-        $profileController->updateBio();
+        $biographyController->updateBiography();
         break;
 
     case '/api/admin/skills/create':
-        $profileController->createSkill();
+        $biographyController->createSkill();
         break;
 
     case '/api/admin/skills/update':
-        $profileController->updateSkill();
+        $biographyController->updateSkill();
         break;
 
     case '/api/admin/skills/delete':
-        $profileController->deleteSkill();
+        $biographyController->deleteSkill();
         break;
 
-    // Catch-All Exception Handling Page
     default:
         http_response_code(404);
         echo "<h1>404 Not Found</h1>";

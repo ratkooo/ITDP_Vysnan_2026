@@ -28,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <main style="max-width: 420px; width: 100%; background: #ffffff; padding: 2.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
         <h2 style="font-size: 1.85rem; color: #1e293b; margin-bottom: 0.5rem; font-weight: 700;">System Login</h2>
         <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem;">
-            Enter your authorization tokens to access admin panels.
+            Enter your credentials to log in.
         </p>
 
         <?php if (!empty($_SESSION['registration_success'])) : ?>
@@ -40,7 +40,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         <?php if (!empty($_SESSION['login_error'])) : ?>
             <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 0.85rem; border-radius: 6px; margin-bottom: 1.25rem; font-size: 0.95rem; font-weight: 500;">
-                ❌ <?= htmlspecialchars($_SESSION['login_error']); ?>
+                ❌ Invalid account credentials.
             </div>
             <?php unset($_SESSION['login_error']); ?>
         <?php endif; ?>
@@ -62,7 +62,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
 
             <button type="submit" class="btn" style="width: 100%; padding: 0.75rem; background: #0f172a; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                Authenticate Session
+                Login
             </button>
 
             <div style="margin-top: 1.25rem; text-align: left; font-size: 0.95rem; color: #334155;">

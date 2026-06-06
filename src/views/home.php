@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
 // Fetch synchronous content records for standard execution render loops
 try {
     // Dynamic Bio lookup
-    $bioStmt = $pdo->query("SELECT bio FROM profile_settings WHERE id = 1 LIMIT 1");
+    $bioStmt = $pdo->query("SELECT bio FROM biography WHERE id = 1 LIMIT 1");
     $profileData = $bioStmt->fetch();
     $currentBio = $profileData ? $profileData['bio'] : '';
 
@@ -143,7 +143,7 @@ try {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2>About Me</h2>
                 <?php if ($isAdmin && !isset($_GET['edit_bio'])) : ?>
-                    <a href="/?edit_bio=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; text-decoration: none;">✏️ Edit Bio</a>
+                    <a href="/?edit_bio=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; text-decoration: none;">Edit Bio</a>
                 <?php endif; ?>
             </div>
 
@@ -176,7 +176,7 @@ try {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2>My Skills</h2>
                 <?php if ($isAdmin && !isset($_GET['add_skill']) && !isset($_GET['edit_skill'])) : ?>
-                    <a href="/?add_skill=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; background-color: #3b82f6; text-decoration: none;">➕ Add New Skill</a>
+                    <a href="/?add_skill=1" class="btn" style="padding: 4px 10px; font-size: 0.85em; background-color: #3b82f6; text-decoration: none;">+ Add New Skill</a>
                 <?php endif; ?>
             </div>
 
@@ -249,11 +249,14 @@ try {
 
     <aside>
         <sidebar>
-            <h2>Programme Tracking</h2>
-            <p>Monitor my active higher academic roadmap progress and EC accumulations live.</p>
-            <a href="/dashboard" class="btn">View Study Dashboard</a>
+            <h2>Administratior dashboard</h2>
+            <?php if ($isAdmin) : ?>
+                <p class="text-success">✔ Admin priviliges</p>
+            <?php endif; ?>
+            <p>View the dashboard to edit the course list as well as monitor registered users. (Admin priviliges required)</p>
+            <a href="/dashboard" class="btn">View Admin Dashboard</a>
             <hr>
-            <h2>Latest Insights</h2>
+            <h2>Blog page</h2>
             <p>Explore ideas on programming architecture inside my publishing space.</p>
             <a href="/blog" class="btn">Read Blog Posts</a>
         </sidebar>

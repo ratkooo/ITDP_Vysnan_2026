@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `profile_settings` (
+CREATE TABLE IF NOT EXISTS `biography` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `bio` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `skills` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `profile_settings` (`id`, `bio`)
+INSERT INTO `biography` (`id`, `bio`)
 VALUES (1, 'I am an ICT student, specializing in data science, back-end development and DevOps.
 I am currently a 3rd year bachelor student at HZ University of Applied Sciences. At the moment,
 I am doing my Study Abroad Minor at the Frankfurt University of Applied Sciences in Germany.')
