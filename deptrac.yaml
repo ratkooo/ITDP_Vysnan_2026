@@ -1,28 +1,26 @@
-paths:
-  - src
+deptrac:
+  layers:
+    - name: Controllers
+      collectors:
+        - type: directory
+          value: src/Controllers/.*
 
-layers:
-  - name: Controllers
-    collectors:
-      - type: className
-        regex: ^App\\Controllers\\.*
+    - name: Repositories
+      collectors:
+        - type: directory
+          value: src/Repositories/.*
 
-  - name: Repositories
-    collectors:
-      - type: className
-        regex: ^App\\Repositories\\.*
+    - name: Models
+      collectors:
+        - type: directory
+          value: src/Models/.*
 
-  - name: Models
-    collectors:
-      - type: className
-        regex: ^App\\Models\\.*
+  ruleset:
+    Controllers:
+      - Repositories
+      - Models
 
-rules:
-  - Controllers: [Models, Repositories]
-  - Repositories: [Models]
-  - Models: []
+    Repositories:
+      - Models
 
-forbid:
-  - Models -> Controllers
-  - Models -> Repositories
-  - Repositories -> Controllers
+    Models: []

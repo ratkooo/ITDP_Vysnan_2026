@@ -9,7 +9,8 @@
     "phpunit/phpunit": "^10.5",
     "phpstan/phpstan": "^1.11",
     "squizlabs/php_codesniffer": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "qossmic/deptrac-shim": "^1.0"
   },
   "autoload": {
     "psr-4": {
