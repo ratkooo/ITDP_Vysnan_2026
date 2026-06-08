@@ -39,4 +39,4 @@ jobs:
         run: curl -LSs https://github.com/qossmic/deptrac/releases/latest/download/deptrac.phar -o deptrac.phar && chmod +x deptrac.phar
 
       - name: Run Deptrac Analysis
-        run: ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
+        run: php ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
