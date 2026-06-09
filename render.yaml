@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: itdp-portfolio-web
+    env: docker
+    repo: https://github.com/HZ-ICT1-2526/itdp-ratkooo
+    plan: free
+    region: frankfurt 
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: showcase_database
+          property: portfolio_host
+      - key: DB_DATABASE
+        fromDatabase:
+          name: showcase_database
+          property: portfolio_database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: showcase_database
+          property: portfolio_user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: showcase_database
+          property: portfolio_password
+
+databases:
+  - name: showcase_database
+    plan: free
+    region: frankfurt

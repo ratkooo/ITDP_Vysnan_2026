@@ -259,7 +259,7 @@ jobs:
         run: curl -LSs https://github.com/qossmic/deptrac/releases/latest/download/deptrac.phar -o deptrac.phar && chmod +x deptrac.phar
 
       - name: Run Deptrac Analysis
-        run: php deptrac.phar analyse --config-file=deptrac.yaml
+        run: php ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
 ```
 
 Then, we need to create a configuration file for Deptrac called deptrac.yml in the root directory:
@@ -291,3 +291,87 @@ deptrac:
 
     Models: []
 ```
+APP DEPLOYMENT
+
+For the webapp deployment, I will be using my own private server running Ubuntu Server, so these steps apply directly to my configuration. Replicability can be guaranteed only if the developer wants to deploy the app on this server.
+
+1.` we need to access the server using SSH from a Windows Powershell terminal (Authentication requiered):
+```powershell
+ssh ratko@100.83.224.114
+```
+2. we run these commands to install and update all dependencies including Docker:
+```wsl
+sudo apt update && sudo apt upgrade -y
+
+sudo apt install -y curl git certbot python3-certbot-nginx nginx docker.io docker-compose
+
+sudo systemctl enable --now docker
+
+sudo usermod -aG docker $USER
+
+sudo apt install nginx -o Dpkg::Options::="--force-confold" -y
+
+newgrp docker
+```
+3. create the website's configuration file:
+```wsl
+sudo nano /etc/nginx/sites-available/itdp
+```
+4. in the Nano editor:
+```
+# 1. Public HTTP Redirection Block (IPv4 & IPv6)
+server {
+    listen 192.168.178.69:80;
+    listen [2001:16b8:c549:d300:24e:1ff:feae:c9df]:80;
+    server_name server100bomby.pp.ua; # USER NEEDS THEIR OWN DOMAIN, MINE IS REGISTERED THROUGH NIC.UA FOR FREE
+
+    return 301 https://$host$request_uri;
+}
+
+# 2. Public Secure HTTPS Block (IPv4 & IPv6)
+server {
+    listen 192.168.178.69:443 ssl;
+    listen [2001:16b8:c549:d300:24e:1ff:feae:c9df]:443 ssl;
+    server_name server100bomby.pp.ua;
+
+    ssl_certificate /etc/letsencrypt/live/server100bomby.pp.ua/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/server100bomby.pp.ua/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+5. Check config file and restart Nginx:
+```wsl
+sudo ln -s /etc/nginx/sites-available/itdp /etc/nginx/sites-enabled/
+
+sudo nginx -t
+
+sudo systemctl restart nginx
+```
+```
+7. When this is done, we need to configure 
+
+
+Once this is done, we create a directory for our Project files and pull the GitHub repository:
+```wsl
+cd ~
+
+mkdir /itdp
+
+git clone https://github.com/HZ-ICT1-2526/itdp-ratkooo
+```
+Once it's cloned, navigate to the folder:
+```wsl
+cd /itdp-ratkooo
+```
+Then, create an .env file using:
+```wsl
