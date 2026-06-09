@@ -4,25 +4,27 @@ services:
     env: docker
     repo: https://github.com/HZ-ICT1-2526/itdp-ratkooo
     plan: free
-    region: frankfurt 
+    region: frankfurt
     envVars:
       - key: DB_HOST
         fromDatabase:
           name: showcase_database
-          property: portfolio_host
+          property: host         
+
       - key: DB_DATABASE
         fromDatabase:
           name: showcase_database
-          property: portfolio_database
+          property: database     
+
       - key: DB_USERNAME
         fromDatabase:
           name: showcase_database
-          property: portfolio_user
+          property: user          
+
       - key: DB_PASSWORD
         fromDatabase:
           name: showcase_database
-          property: portfolio_password
-
+          property: password     
 databases:
   - name: showcase_database
     plan: free
