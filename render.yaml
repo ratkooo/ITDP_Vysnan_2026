@@ -6,26 +6,31 @@ services:
     plan: free
     region: frankfurt
     envVars:
+      - key: APACHE_DOCUMENT_ROOT
+        value: /var/www/html/public
+      - key: DB_CONNECTION
+        value: mysql
+
+      # Maps Aiven MySQL integration parameters into your PHP variables
       - key: DB_HOST
         fromDatabase:
-          name: showcase_database
-          property: host         
-
+          name: portfolio-mysql-db
+          property: host
       - key: DB_DATABASE
         fromDatabase:
-          name: showcase_database
-          property: database     
-
+          name: portfolio-mysql-db
+          property: database
       - key: DB_USERNAME
         fromDatabase:
-          name: showcase_database
-          property: user          
-
+          name: portfolio-mysql-db
+          property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: showcase_database
-          property: password     
+          name: portfolio-mysql-db
+          property: password
+
 databases:
-  - name: showcase_database
+  - name: portfolio-mysql-db
+    databaseEngine: mysql     # <--- FORCES RENDER TO PROVISION A MYSQL INSTANCE
     plan: free
     region: frankfurt
