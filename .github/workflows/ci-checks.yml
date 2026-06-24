@@ -20,6 +20,8 @@ jobs:
           php-version: '8.2'
           tools: composer
           coverage: xdebug
+        env:
+          XDEBUG_MODE: coverage
 
       - name: Cache Composer Dependencies
         uses: actions/cache@v3
@@ -41,3 +43,8 @@ jobs:
 
       - name: Run Deptrac Analysis
         run: php ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
+
+      - name: Run PHPUnit with Coverage
+        run: ./vendor/bin/phpunit tests --coverage-text
+        env:
+          XDEBUG_MODE: coverage
