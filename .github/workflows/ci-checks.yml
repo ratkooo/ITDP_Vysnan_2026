@@ -45,6 +45,6 @@ jobs:
         run: php ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
 
       - name: Run PHPUnit with Coverage
-        run: ./vendor/bin/phpunit tests --coverage-text
+        run: php ./vendor/bin/phpunit tests --coverage-text
         env:
           XDEBUG_MODE: coverage
