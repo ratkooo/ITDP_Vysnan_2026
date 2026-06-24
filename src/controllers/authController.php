@@ -37,8 +37,12 @@ class AuthController
             $_SESSION['email'] = $user->email;
             $_SESSION['role'] = $user->role;
 
-            header("Location: /");
-            exit;
+            if (!defined('PHPUNIT_RUNNING')) {
+                header("Location: /");
+                exit;
+            }
+
+            return;
         }
 
         $this->showLogin("Invalid username or password configuration.");
@@ -61,8 +65,10 @@ class AuthController
             );
         }
         session_destroy();
-        header("Location: /");
-        exit;
+        if (!defined('PHPUNIT_RUNNING')) {
+            header("Location: /");
+            exit;
+        }
     }
 
     public function showRegister(?string $error = null, ?string $success = null): void
