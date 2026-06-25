@@ -5,7 +5,6 @@
     "dockerfilePath": "dockerfile"
   },
   "deploy": {
-    "startCommand": "apache2-foreground",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
