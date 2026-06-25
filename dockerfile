@@ -11,6 +11,7 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.
 
 COPY . /var/www/html/
 
-RUN a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork rewrite
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load \
+    && a2enmod mpm_prefork rewrite
 WORKDIR /var/www/html
 EXPOSE 80
