@@ -85,7 +85,7 @@ $pass = 'portfolio_password';
     // This generates a 100% accurate mathematical hash for 'x63HaL6qcTzjij' at runtime
     $testUsername = 'admin';
     $testEmail = 'admin@gmail.com';
-    $testPasswordHash = password_hash('x63HaL6qcTzjij', PASSWORD_BCRYPT);
+    $testPasswordHash = password_hash('GuysUFIZE1Vt5K', PASSWORD_BCRYPT);
     $testRole = 'admin';
 
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");

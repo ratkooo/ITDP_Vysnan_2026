@@ -139,6 +139,13 @@ $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 chatMessages.appendChild(msgElement);
             });
 
+            // Mark messages as seen only after they are rendered on screen
+            if (activeTargetUserId) {
+                let seenThreads = JSON.parse(localStorage.getItem('chat_seen_threads') || '{}');
+                seenThreads[activeTargetUserId] = messages.length;
+                localStorage.setItem('chat_seen_threads', JSON.stringify(seenThreads));
+            }
+
             // Only snap down if they were already at the bottom, page just loaded, or they sent a message
             if (isUserAtBottom || isFirstLoad || forceScrollDown) {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -212,11 +219,6 @@ $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                 const uid = thread.user_id;
                 const totalCount = parseInt(thread.message_count || 0);
                 const lastSender = thread.last_sender;
-
-                // Sync currently selected chat thread snapshot count
-                if (activeTargetUserId == uid) {
-                    seenThreads[uid] = totalCount;
-                }
 
                 const lastSeenCount = seenThreads[uid] || 0;
                 const unreadCount = totalCount - lastSeenCount;

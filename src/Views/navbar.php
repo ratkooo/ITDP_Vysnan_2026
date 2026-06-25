@@ -65,11 +65,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         const count = parseInt(thread.message_count || 0);
                         const lastSender = thread.last_sender;
 
-                        // If viewing this thread right now, update local storage reference point
-                        if (isChatPage && activeTargetUserId == uid) {
-                            seenThreads[uid] = count;
-                        }
-
                         const lastSeenCount = seenThreads[uid] || 0;
 
                         // Trigger badge if new messages exist and the last person who typed isn't the admin themselves

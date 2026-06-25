@@ -159,7 +159,7 @@ php vendor/bin/phpunit --testsuite "ITDP Test Suite" --filter "Tests\\Integratio
 The test suite is configured in `phpunit.xml`:
 
 - **Bootstrap**: `tests/bootstrap.php` — loads the Composer autoloader and defines `PHPUNIT_RUNNING` to suppress header redirect side effects during controller tests.
-- **Source for coverage**: `src/` directory (excluding `src/views/`).
+- **Source for coverage**: `src/` directory (excluding `src/Views/`).
 - **Coverage target**: ≥ 45% of app-level code.
 
 ---
@@ -179,8 +179,10 @@ To keep tests fast and self-contained, external dependencies are replaced:
 
 | Category | Count |
 |----------|-------|
-| Unit Tests | 7 (across 2 files) |
-| Integration Tests | 34 (across 5 files) |
-| **Total** | **41** |
+| Unit Tests | 9 (across 2 files) |
+| Integration Tests | 39 (across 5 files) |
+| **Total** | **48** |
+
+> Note: PHPUnit counts each data provider row as a separate test. `testRegistrationValidationRules` in `UserTest` has 5 data provider entries, so it contributes 5 test runs rather than 1.
 
 The combination of unit tests on the model layer and integration tests on the controller and repository layers ensures that core business logic, data validation, access control, and database interactions are all verified automatically.

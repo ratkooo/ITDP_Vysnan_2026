@@ -17,10 +17,10 @@ if (session_status() === PHP_SESSION_NONE) {
 // =========================================================================
 // 1. DATABASE CONFIGURATION (Multi-Container DevOps Step 3)
 // =========================================================================
-$host    = 'db_server'; // Matches the MySQL service name in docker-compose.yml
-$db      = 'portfolio_db';
-$user    = 'portfolio_user';
-$pass    = 'portfolio_password';
+$host    = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'db_server';
+$db      = $_ENV['DB_DATABASE'] ?? getenv('DB_DATABASE') ?: 'portfolio_db';
+$user    = $_ENV['DB_USERNAME'] ?? getenv('DB_USERNAME') ?: 'portfolio_user';
+$pass    = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: 'portfolio_password';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
