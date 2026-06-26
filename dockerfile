@@ -19,7 +19,6 @@ RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.l
 WORKDIR /var/www/html
 EXPOSE 80
 
-# --- ADD THESE LINES TO FIX THE MPM ERROR ---
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
