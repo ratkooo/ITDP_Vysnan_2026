@@ -373,5 +373,7 @@ Once it's cloned, navigate to the folder:
 ```wsl
 cd /itdp-ratkooo
 ```
-Then, create an .env file using:
-```wsl
+
+
+
+cat migrations/01_create_user_table.sql migrations/02_create_dashboard_table.sql migrations/03_create_blogpost_table.sql migrations/04_create_messages_table.sql migrations/05_create_biography_table.sql | mysql -h caboose.proxy.rlwy.net -u root -p ScnHkllgIgLdznGpdQQlbReDOKXIRFyx --port 21026 --protocol=TCP railway

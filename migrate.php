@@ -9,10 +9,10 @@ require_once __DIR__ . '/vendor/autoload.php';
  * Supports --refresh flag to reset database state during development.
  */
 
-$host = 'db_server';
-$db   = 'portfolio_db';
-$user = 'portfolio_user';
-$pass = 'portfolio_password';
+$host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: 'db_server';
+$db   = $_ENV['DB_DATABASE'] ?? getenv('DB_DATABASE') ?: 'portfolio_db';
+$user = $_ENV['DB_USERNAME'] ?? getenv('DB_USERNAME') ?: 'portfolio_user';
+$pass = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: 'portfolio_password';
 
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
