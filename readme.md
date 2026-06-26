@@ -296,6 +296,7 @@ APP DEPLOYMENT
 The application is deployed to Railway using Docker. Two services are required: the PHP web application and a MySQL database.
 
 Before we start with the deployment process, we need to create `railway.json`, `docker-entrypoint.sh` and modify `docker`:
+
 **railway.json**
 ```json
 {
@@ -310,6 +311,7 @@ Before we start with the deployment process, we need to create `railway.json`, `
   }
 }
 ```
+
 **docker-entrypoint.sh** (fix for `AH00534: apache2: Configuration error: More than one MPM loaded.` error on deployment)
 ```sh
 set -e
@@ -321,6 +323,7 @@ a2enmod mpm_prefork
 
 exec apache2-foreground
 ```
+
 **dockerfile** add to the bottom (fix for `AH00534: apache2: Configuration error: More than one MPM loaded.` error on deployment)
 ```dockerfile
 COPY docker-entrypoint.sh /usr/local/bin/
