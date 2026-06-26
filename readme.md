@@ -239,6 +239,9 @@ jobs:
         with:
           php-version: '8.2'
           tools: composer
+          coverage: xdebug
+        env:
+          XDEBUG_MODE: coverage
 
       - name: Cache Composer Dependencies
         uses: actions/cache@v3
@@ -260,6 +263,28 @@ jobs:
 
       - name: Run Deptrac Analysis
         run: php ./vendor/bin/deptrac analyse --config-file=deptrac.yaml
+
+      - name: Run PHPUnit with Coverage
+        run: php ./vendor/bin/phpunit --coverage-text --coverage-clover coverage.xml
+        env:
+          XDEBUG_MODE: coverage
+
+      - name: Enforce 45% Code Coverage Threshold
+        run: |
+          php -r "
+            \$xml = simplexml_load_file('coverage.xml');
+            \$metrics = \$xml->project->metrics;
+            \$total = (int)\$metrics['statements'];
+            \$covered = (int)\$metrics['coveredstatements'];
+            if (\$total === 0) { echo 'No statements found.'; exit(1); }
+            \$pct = round((\$covered / \$total) * 100, 2);
+            echo \"Coverage: {\$pct}% ({\$covered}/{\$total} statements)\n\";
+            if (\$pct < 45) {
+              echo \"FAIL: Coverage {\$pct}% is below the required 45%.\n\";
+              exit(1);
+            }
+            echo \"PASS: Coverage meets the 45% minimum.\n\";
+          "
 ```
 
 Then, we need to create a configuration file for Deptrac called deptrac.yml in the root directory:
