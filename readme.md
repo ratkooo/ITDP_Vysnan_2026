@@ -293,87 +293,45 @@ deptrac:
 ```
 APP DEPLOYMENT
 
-For the webapp deployment, I will be using my own private server running Ubuntu Server, so these steps apply directly to my configuration. Replicability can be guaranteed only if the developer wants to deploy the app on this server.
+The application is deployed to Railway using Docker. Two services are required: the PHP web application and a MySQL database.
 
-1.` we need to access the server using SSH from a Windows Powershell terminal (Authentication requiered):
-```powershell
-ssh ratko@100.83.224.114
-```
-2. we run these commands to install and update all dependencies including Docker:
-```wsl
-sudo apt update && sudo apt upgrade -y
-
-sudo apt install -y curl git certbot python3-certbot-nginx nginx docker.io docker-compose
-
-sudo systemctl enable --now docker
-
-sudo usermod -aG docker $USER
-
-sudo apt install nginx -o Dpkg::Options::="--force-confold" -y
-
-newgrp docker
-```
-3. create the website's configuration file:
-```wsl
-sudo nano /etc/nginx/sites-available/itdp
-```
-4. in the Nano editor:
-```
-# 1. Public HTTP Redirection Block (IPv4 & IPv6)
-server {
-    listen 192.168.178.69:80;
-    listen [2001:16b8:c549:d300:24e:1ff:feae:c9df]:80;
-    server_name server100bomby.pp.ua; # USER NEEDS THEIR OWN DOMAIN, MINE IS REGISTERED THROUGH NIC.UA FOR FREE
-
-    return 301 https://$host$request_uri;
-}
-
-# 2. Public Secure HTTPS Block (IPv4 & IPv6)
-server {
-    listen 192.168.178.69:443 ssl;
-    listen [2001:16b8:c549:d300:24e:1ff:feae:c9df]:443 ssl;
-    server_name server100bomby.pp.ua;
-
-    ssl_certificate /etc/letsencrypt/live/server100bomby.pp.ua/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/server100bomby.pp.ua/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+Before we start with the deployment process, we need to create a `railway.json` file:
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "dockerfile"
+  },
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
 }
 ```
-5. Check config file and restart Nginx:
-```wsl
-sudo ln -s /etc/nginx/sites-available/itdp /etc/nginx/sites-enabled/
 
-sudo nginx -t
+1. Create a Railway account at railway.app and create a new project.
 
-sudo systemctl restart nginx
-```
-```
-7. When this is done, we need to configure 
+2. Add a MySQL database service: click **+ New** -> **Database** -> **MySQL**.
 
+3. Add the web application service: click **+ New** -> **GitHub Repo** -> select the portfolio repository. Railway will detect the `dockerfile` automatically via `railway.json`.
 
-Once this is done, we create a directory for our Project files and pull the GitHub repository:
-```wsl
-cd ~
+4. In the web service **Variables** tab, we match the webserver variables with the MySQL one:
 
-mkdir /itdp
+| Variable | Value |
+|---|---|
+| `DB_HOST` | MySQL `MYSQLHOST` |
+| `DB_DATABASE` | MySQL `MYSQL_DATABASE` |
+| `DB_USERNAME` | MySQL `MYSQLUSER` |
+| `DB_PASSWORD` | MySQL `MYSQL_ROOT_PASSWORD` |
 
-git clone https://github.com/HZ-ICT1-2526/itdp-ratkooo
-```
-Once it's cloned, navigate to the folder:
-```wsl
-cd /itdp-ratkooo
+5. Click **Deploy**. Railway will build the Docker image and start both services.
+
+6. Once both services show **Online**, open the web service **Console** tab and run the migration script to create all tables and seed initial data:
+```bash
+php migrate.php
 ```
 
+7. Then, open the web service and go to **Settings** and generate a custom domain for the website.
 
-
-cat migrations/01_create_user_table.sql migrations/02_create_dashboard_table.sql migrations/03_create_blogpost_table.sql migrations/04_create_messages_table.sql migrations/05_create_biography_table.sql | mysql -h caboose.proxy.rlwy.net -u root -p ScnHkllgIgLdznGpdQQlbReDOKXIRFyx --port 21026 --protocol=TCP railway
+8. The application is now live. The public URL is visible at the top of the web service panel (https://itdp-ratkooo-production.up.railway.app/).
